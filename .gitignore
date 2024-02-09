@@ -1,1 +1,10 @@
 .env
+
+#pycache
+__pycache__/
+*.pyc
+*.pyo
+
+#image-rec
+image-rec/images/*
+!image-rec/images/.gitkeep
