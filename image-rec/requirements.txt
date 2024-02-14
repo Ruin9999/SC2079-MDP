@@ -1,4 +1,4 @@
-inference==0.9.9
+inference==0.9.10
 opencv_python==4.8.0.76
 opencv_python_headless==4.9.0.80
 python-dotenv==1.0.1
