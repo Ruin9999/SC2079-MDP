@@ -68,5 +68,5 @@ def show_annotation(image,results):
     cv2.destroyAllWindows()  # Close all OpenCV windows after the wait time
 
 
-image_file_path = "images/image_test2.jpg"
-predict_id(image_file_path)
+# image_file_path = "images/image_test2.jpg"
+# predict_id(image_file_path)

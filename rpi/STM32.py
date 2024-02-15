@@ -2,7 +2,7 @@ import time
 import serial
 
 
-class STM32:
+class STM32Server:
     def __init__(self, serial_port= "/dev/ttyUSB0", baud_rate=115200) -> None:
         self.baud_rate = baud_rate
         self.serial_port = serial_port
@@ -56,7 +56,7 @@ class STM32:
 
 if __name__ == "__main__":
     #displacement = ["center,0,reverse,15", "left,90,forward,5","right,180,forward,5"]
-    STM = STM32()
+    STM = STM32Server()
     STM.connect()
     STM.send("0FW090")
 

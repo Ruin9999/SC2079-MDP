@@ -1,30 +1,23 @@
+from threading import Lock
 from picamera import PiCamera
 from time import sleep
 from datetime import datetime
 
+# Initialize the camera lock
+camera_lock = Lock()
 
 def take_pic():
-    # Create an object for the PiCamera
-    camera = PiCamera()
+    with camera_lock:
+        with PiCamera() as camera:
+            camera.resolution = (640, 640)
+            sleep(2)  # Camera warm-up time
 
-    # Optional: Set camera resolution. 640 x 640
-    camera.resolution = (640, 640)
+            now = datetime.now()
+            folder_path = "images/"
+            image_name = now.strftime("image_%Y-%m-%d_%H-%M-%S.jpg")
+            image_path = folder_path + image_name
 
-    # Give the camera some warm-up time
-    sleep(2)
+            camera.capture(image_path)
+            print(f"Image captured and saved at {image_path}")
 
-    # Get the current datetime
-    now = datetime.now()
-    folder_path = "images/"
-    image_name = now.strftime("image_%Y-%m-%d_%H-%M-%S.jpg")
-    image_path = folder_path + image_name
-    print(image_path)
-
-    # Capture to a file
-    camera.capture(image_path)
-    print("Image captured and saved")
-
-    return image_path
-
-
-
+            return image_path

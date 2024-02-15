@@ -1,42 +1,59 @@
 import socket
 import os
-from takepic import take_pic  # Ensure this module correctly captures and returns an image path
 
-# Change to your laptop host ip when connected to RPI Wifi
-# use ipconfig to find your laptop host ip 
-HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-# HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+class ImageRecognitionClient:
+    def __init__(self, host, port):
+        self.HOST = host
+        self.PORT = port
+        self.HEADER_SIZE = 10
+        self.socket = None
 
-PORT = 2030             # The port used by the server
-HEADER_SIZE = 10
+    def connect(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        self.socket.connect((self.HOST, self.PORT))
+        print("Connected to the server.")
 
-def send_file(file_path):
-    file_name = os.path.basename(file_path)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        
-        # Send the file name size and file name
-        file_name_encoded = file_name.encode('utf-8')
-        file_name_length = str(len(file_name_encoded)).encode('utf-8')
-        file_name_header = file_name_length + b' ' * (HEADER_SIZE - len(file_name_length))
-        s.sendall(file_name_header)
-        s.sendall(file_name_encoded)
-        
-        with open(file_path, 'rb') as file:
-            file_data = file.read()
-        
-        # Prepare and send the image data header
-        data_length = str(len(file_data)).encode('utf-8')
-        header = data_length + b' ' * (HEADER_SIZE - len(data_length))  # Padding to ensure header size
-        s.sendall(header)
-        
-        # Send the file data
-        s.sendall(file_data)
-        print("File sent to the server.")
-        
-        # Optional: Wait for server acknowledgment
-        response = s.recv(1024)
-        print(f"Predicted ID: {response.decode('utf-8')}")
+    def disconnect(self):
+        if self.socket:
+            self.socket.close()
+            print("Disconnected from the server.")
+        self.socket = None
 
-file_path = take_pic()  # Ensure this function returns the full path of the captured image
-send_file(file_path)
+    def send_file(self, file_path):
+        if not self.socket:
+            print("Not connected to the server.")
+            return
+        
+        try:
+            file_name = os.path.basename(file_path)
+            
+            # Send the file name size and file name
+            file_name_encoded = file_name.encode('utf-8')
+            file_name_length = str(len(file_name_encoded)).encode('utf-8')
+            file_name_header = file_name_length + b' ' * (self.HEADER_SIZE - len(file_name_length))
+            self.socket.sendall(file_name_header)
+            self.socket.sendall(file_name_encoded)
+            
+            # Read and send the file data
+            with open(file_path, 'rb') as file:
+                file_data = file.read()
+            data_length = str(len(file_data)).encode('utf-8')
+            header = data_length + b' ' * (self.HEADER_SIZE - len(data_length))
+            self.socket.sendall(header)
+            self.socket.sendall(file_data)
+            print("File sent to the server.")
+            
+            response = bytearray()  # Initialize an empty bytearray to store the response
+            while True:
+                chunk = self.socket.recv(1024)  # Receive a chunk of data
+                if not chunk:  # If chunk is empty, this means the connection is closed or there's no more data
+                    break  # Exit the loop
+                response += chunk  # Append the chunk to the accumulated response data
+            predict_id = response.decode('utf-8')
+            print(f"Predicted ID: {predict_id}")
+            self.disconnect()  # Ensure the socket is properly closed before retrying
+            self.connect()  # Re-establish the connection
+            return predict_id
+        except Exception as e:
+            print(f"Failed to send file: {e}")
