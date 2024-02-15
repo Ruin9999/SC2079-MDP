@@ -5,7 +5,8 @@ from id_mapping import mapping
 
 # Change to your laptop host ip when connected to RPI Wifi
 # use ipconfig to find your laptop host ip 
-HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
+#HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
 # HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
 PORT = 2030 
