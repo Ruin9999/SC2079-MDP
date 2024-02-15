@@ -15,7 +15,7 @@ server.bind(ADDR)
 def create_response():
     # Create and return the JSON response
     response = {
-            "commands": ["FR00", "FW10", "SNAP1", "FR00", "BW50", "FL00", "FW60", "SNAP2", "SNAP3", "SNAP4", "FIN"],
+            "commands": ["FW090", "FW050", "BR000", "FW020", "FW020", "BR000", "SNAP1_R", "BR010", "FR000", "BW010", "BR000", "SNAP2_C", "FIN"],
             "distance": 46.0,
             "path": [{"d": 0, "s": -1, "x": 1, "y": 1}, {"d": 2, "s": -1, "x": 5, "y": 3}, {"d": 2, "s": -1, "x": 6, "y": 9}]
     }

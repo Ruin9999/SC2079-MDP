@@ -26,8 +26,8 @@ def startBTServer(bt_queue, running_flag, ir_event):
                 print(f"IR msg: {msg}")
                 if optional_parts:  # This checks if there are any optional parts
                     # optional_parts is a list, handle accordingly
-                    number_part, predict_id = optional_parts
-                    print(f"IR optional parts: Number part = {number_part}, Predict ID = {predict_id}")
+                    number_part, predict_id, direction = optional_parts
+                    print(f"IR optional parts: Number part = {number_part}, Predict ID = {predict_id}, Direction = {direction}")
                     ir_event.set()
             elif command == "FIN":
                 print(f"FIN msg: {msg}\n")
@@ -80,22 +80,33 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
             if response_received:
                 print("Extracting the data from response:")
                 commands = response_received["commands"] 
-                print("Commands:", commands,"\n")
+                print("Commands:", commands, "\n")
 
                 substring = "SNAP"
                 if commands:
                     for command in commands:
                         ir_event.wait()
                         stm32_event.wait()
-                        if substring in command:
+                        if command.startswith(substring):
                             ir_event.clear()
-                            number_part = command[len(substring):]
-                            ir_queue.put((substring,number_part))
+                            # Split the command by "_" to separate the number and direction, e.g., "SNAP1_R" -> ["SNAP1", "R"]
+                            parts = command.split("_")
+                            if len(parts) == 2:
+                                # The part before "_" is the SNAP command with number, and the part after "_" is the direction
+                                snap_command, direction = parts
+                                # Extract just the numeric part from the snap_command
+                                number_part = snap_command[len(substring):]
+                                # Now you have the number and direction separately
+                                ir_queue.put((substring, number_part, direction))
+                            else:
+                                # Handle unexpected command format
+                                print(f"Unexpected command format: {command}")
                         elif command == "FIN":
                             bt_queue.put((command,))
                         else:
                             stm32_event.clear()
-                            stm32_queue.put(command)       
+                            stm32_queue.put(command)
+      
 
     print("Disconnecting from Algo Server")
     client.disconnect()
@@ -110,12 +121,13 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
 
     while running_flag[0]:
         if not ir_queue.empty():
-            (substring,number_part) = ir_queue.get()
+            (substring, number_part, direction) = ir_queue.get()
             print(f"substring is {substring}")
             print(f"Taking a photo for obstacle no {number_part}")
+            print(f"Direction is {direction}")
             file_path = take_pic()
-            predict_id = client.send_file(file_path)
-            bt_queue.put(("IR", number_part, predict_id))
+            predict_id = client.send_file(file_path, direction)
+            bt_queue.put(("IR", number_part, predict_id, direction))
 
     print("Disconnecting from Image Rec Server")
     client.disconnect()
