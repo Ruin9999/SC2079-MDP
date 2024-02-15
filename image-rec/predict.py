@@ -9,10 +9,11 @@ import os
  
 # Load environment variables from .env file from relative path
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+print(dotenv_path)
 load_dotenv(dotenv_path)
 # Access the API key
 API_KEY = os.getenv('ROBOFLOW_API_KEY')
-
+print(API_KEY)
 # load a pre-trained yolov8n model
 model = get_roboflow_model(model_id="2024-grp-16-image-rec/5",api_key=API_KEY)
 
@@ -32,10 +33,14 @@ def predict_id(image_file_path):
 
     # extract class name
     class_name = None
+    largest_size = -1
     for result in results:  # If 'results' is not a list, remove this loop
         for prediction in result.predictions:
-            class_name = prediction.class_name
-    print()
+            print(prediction)
+            if largest_size == -1 or max(prediction.width,prediction.height) > largest_size:
+                largest_size = max(prediction.width,prediction.height)
+                class_name = prediction.class_name
+
     if class_name:
         print("class_name = "+class_name)
     else:
@@ -63,5 +68,5 @@ def show_annotation(image,results):
     cv2.destroyAllWindows()  # Close all OpenCV windows after the wait time
 
 
-# image_file_path = "images/image_test1.jpg"
-# predict_id(image_file_path)
+image_file_path = "images/image_test2.jpg"
+predict_id(image_file_path)
