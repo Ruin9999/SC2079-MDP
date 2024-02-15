@@ -23,20 +23,20 @@ class CommandGenerator:
 
         # Iterate through each state in the list of states
         for i in range(1, len(states)):
-            steps = "00"
+            steps = "000"
 
             # If previous state and current state are the same direction,
             if states[i].direction == states[i - 1].direction:
                 # Forward - Must be (east facing AND x value increased) OR (north facing AND y value increased)
                 if (states[i].x > states[i - 1].x and states[i].direction == Direction.EAST) or (states[i].y > states[i - 1].y and states[i].direction == Direction.NORTH):
-                    commands.append("FW10")
+                    commands.append("FW010")
                 # Forward - Must be (west facing AND x value decreased) OR (south facing AND y value decreased)
                 elif (states[i].x < states[i-1].x and states[i].direction == Direction.WEST) or (
                         states[i].y < states[i-1].y and states[i].direction == Direction.SOUTH):
-                    commands.append("FW10")
+                    commands.append("FW010")
                 # Backward - All other cases where the previous and current state is the same direction
                 else:
-                    commands.append("BW10")
+                    commands.append("BW010")
 
                 # If any of these states has a valid screenshot ID, then add a SNAP command as well to take a picture
                 if states[i].screenshot_id != -1:
@@ -232,8 +232,15 @@ class CommandGenerator:
                 # Get the number of steps of previous command
                 steps = int(compressed_commands[-1][2:])
                 # If steps are not 90, add 10 to the steps
+                # if steps != 90:
+                #     compressed_commands[-1] = "BW{}".format(steps + 10)
+                #     continue
+
                 if steps != 90:
-                    compressed_commands[-1] = "BW{}".format(steps + 10)
+                    if (steps + 10) < 100:
+                        compressed_commands[-1] = "FW0{}".format(steps + 10)
+                    else:
+                        compressed_commands[-1] = "FW{}".format(steps + 10)
                     continue
 
             # If both commands are FW
@@ -241,8 +248,12 @@ class CommandGenerator:
                 # Get the number of steps of previous command
                 steps = int(compressed_commands[-1][2:])
                 # If steps are not 90, add 10 to the steps
+
                 if steps != 90:
-                    compressed_commands[-1] = "FW{}".format(steps + 10)
+                    if (steps + 10) < 100:
+                        compressed_commands[-1] = "FW0{}".format(steps + 10)
+                    else:
+                        compressed_commands[-1] = "FW{}".format(steps + 10)
                     continue
             
             # Otherwise, just add as usual
