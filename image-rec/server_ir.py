@@ -5,9 +5,9 @@ from id_mapping import mapping
 
 # Change to your laptop host ip when connected to RPI Wifi
 # use ipconfig to find your laptop host ip 
-HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+# HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
 #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-#HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
 PORT = 2030 
 HEADER_SIZE = 10        # Number of bytes to use for the header
@@ -66,21 +66,25 @@ def start_server():
         s.listen()
         print(f"[LISTENING] Server is listening on {HOST}:{PORT}")
 
-
         while True:  # Keep server running to accept multiple connections
             conn, addr = s.accept()
             with conn:
                 print(f"Connected by {addr}")
-                file_path, direction = receive_file(conn)
-                if file_path and direction:
-                    print("File received and saved successfully.")
-                    print(f"Direction received: {direction}")
-                    class_name = predict_id(file_path)  # Perform prediction
-                    class_id = str(mapping[class_name])
-                    print(f"Predicted ID: {class_id}")
-                    # Send back prediction ID to client
-                    conn.sendall(class_id.encode('utf-8'))
+                result = receive_file(conn)  # Receive the result as a single variable
+                
+                if result:  # Check if result is not None
+                    file_path, direction = result  # Now unpack safely
+                    if file_path and direction:
+                        print("File received and saved successfully.")
+                        print(f"Direction received: {direction}")
+                        class_name = predict_id(file_path)  # Perform prediction
+                        class_id = str(mapping.get(class_name, -1))  # Use .get() to handle None
+                        print(f"Predicted ID: {class_id}")
+                        # Send back prediction ID to client
+                        conn.sendall(class_id.encode('utf-8'))
+                    else:
+                        print("Failed to receive file.")
                 else:
-                    print("Failed to receive file.")
+                    print("Failed to receive file or connection error.")
 
 start_server()
