@@ -4,8 +4,14 @@ import json
 # Constants
 HEADER = 64
 PORT = 2040
-SERVER = "192.168.80.27"
-ADDR = (SERVER, PORT)
+
+# Change to your laptop host ip when connected to RPI Wifi
+# use ipconfig to find your laptop host ip 
+# HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
+HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+#HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+
+ADDR = (HOST, PORT)
 FORMAT = 'utf-8'
 
 # Create the server socket
@@ -15,7 +21,8 @@ server.bind(ADDR)
 def create_response():
     # Create and return the JSON response
     response = {
-            "commands": ["FW090", "FW050", "BR000", "FW020", "FW020", "BR000", "SNAP1_R", "BR010", "FR000", "BW010", "BR000", "SNAP2_C", "FIN"],
+            "commands": ["FW050", "FIN"],
+            #"commands": ["FW090", "FW050", "BR000", "FW020", "FW020", "BR000", "SNAP1_R", "BR010", "FR000", "BW010", "BR000", "SNAP2_C", "FIN"],
             "distance": 46.0,
             "path": [{"d": 0, "s": -1, "x": 1, "y": 1}, {"d": 2, "s": -1, "x": 5, "y": 3}, {"d": 2, "s": -1, "x": 6, "y": 9}]
     }
@@ -45,7 +52,7 @@ def handle_client(conn, addr):
 
 def start():
     server.listen()
-    print(f"[LISTENING] Server is listening on {SERVER}:{PORT}\n")
+    print(f"[LISTENING] Server is listening on {HOST}:{PORT}\n")
     while True:
         conn, addr = server.accept()
         handle_client(conn, addr)

@@ -24,7 +24,14 @@ def startBTServer(bt_queue, running_flag, ir_event):
             print(f"\nmsg sent to android: {msg}")
             print(f"command: {command}")
 
-            if command == "IR":
+            if command == "STM32":
+                print(f"STM32 msg: {msg}")
+                if optional_parts:
+                    msg, received_msg = optional_parts
+                    print(f"STM32 optional parts: msg = {msg}, received_msg = {received_msg}")
+                    stm32_event.set()
+
+            elif command == "IR":
                 print(f"IR msg: {msg}")
                 if optional_parts:  # This checks if there are any optional parts
                     # optional_parts is a list, handle accordingly
@@ -57,7 +64,13 @@ def startBTServer(bt_queue, running_flag, ir_event):
 
 
 def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, ir_event, stm32_event):
-    HOST = '192.168.80.27'
+
+    # Change to your laptop host ip when connected to RPI Wifi
+    # use ipconfig to find your laptop host ip 
+    # HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+
     PORT = 2040
     client = AlgorithmClient(HOST,PORT)
     print("[CONNECTING] to Algo Server...")
@@ -115,7 +128,11 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
 
 
 def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
-    HOST = '192.168.80.27'
+    # Change to your laptop host ip when connected to RPI Wifi
+    # use ipconfig to find your laptop host ip 
+    # HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     PORT = 2030
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
     print("Connecting to Image Rec Server")
@@ -134,29 +151,31 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
     print("Disconnecting from Image Rec Server")
     client.disconnect()
 
-def startSTMServer(stm32_queue, running_flag, stm32_event):
+def startSTMServer(stm32_queue, bt_queue, running_flag, stm32_event):
     print("Connecting to STM")
+    STM = STM32Server()
+    STM.connect()
 
     while running_flag[0]:
         if not stm32_queue.empty():
             msg = stm32_queue.get()
             print(f"stm32 queue msg = {msg}\n")
-            stm32_event.set()
+            #msg = "FW090"
+            STM.send(msg)
 
+            received_msg = None
+
+            while(True):
+                received_msg = STM.recv()
+                if received_msg == "R":
+                    print(f"Received from stm: {received_msg}")
+                    break
+                                    
+            bt_queue.put(("STM32", msg, received_msg))
+        
+ 
     print("Disconnecting from STM")
-    # #displacement = ["center,0,reverse,15", "left,90,forward,5","right,180,forward,5"]
-    # STM = STM32()
-    # STM.connect()
-    # STM.send("0FW090")
-
-    # received_msg = None
-
-    # while(True):
-    #     received_msg = STM.recv()
-    #     if(received_msg):
-    #         break
-
-    # STM.disconnect()
+    STM.disconnect()
 
 
 if __name__ == "__main__":
@@ -183,7 +202,7 @@ if __name__ == "__main__":
         threading.Thread(target=startBTServer, args=(bt_queue, running_flag, ir_event)),
         threading.Thread(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, ir_event, stm32_event)),
         threading.Thread(target=startIRClient, args=(ir_queue, bt_queue, running_flag, ir_event)),
-        threading.Thread(target=startSTMServer, args=(stm32_queue, running_flag, stm32_event))
+        threading.Thread(target=startSTMServer, args=(stm32_queue, bt_queue, running_flag, stm32_event))
     ]
 
     # Starting threads
