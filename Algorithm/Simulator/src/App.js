@@ -8,7 +8,7 @@ const dir = {
   east: 2,
   south: 4,
   west: 6,
-  skip: 8,
+  none: 8,
 };
 
 const objDir = {
@@ -16,7 +16,7 @@ const objDir = {
   east: 2,
   south: 4,
   west: 6,
-  skip: 8,
+  none: 8,
 };
 
 const dirString = {
@@ -226,8 +226,8 @@ export default function App(){
 
   // Get the obstacle direction using prompt
   const getDirectionFromUser = () => {
-    const direction = window.prompt('Enter the direction (up, down, left, right):');
-    return direction && ['up', 'down', 'left', 'right'].includes(direction.toLowerCase())
+    const direction = window.prompt('Enter the direction (up, down, left, right, none):');
+    return direction && ['up', 'down', 'left', 'right', 'none'].includes(direction.toLowerCase())
       ? direction.toLowerCase()
       : null;
   };
@@ -280,10 +280,21 @@ export default function App(){
           break;
         case 'right':
           newGrid[row][col] = { ...newGrid[row][col], rightBorder:true};
+          newGrid[row][col] = { ...newGrid[row][col], color: true };
           obArray.push ({
             x: transformXY.x,
             y: transformXY.y,
             d: objDir.east,
+            id: createID(),
+          });
+          break;
+        case 'none':
+          newGrid[row][col] = { ...newGrid[row][col], noBorder:true};
+          newGrid[row][col] = { ...newGrid[row][col], color: true };
+          obArray.push ({
+            x: transformXY.x,
+            y: transformXY.y,
+            d: objDir.none,
             id: createID(),
           });
           break;
@@ -422,6 +433,7 @@ export default function App(){
                     } ${cell && cell.leftBorder ? 'left-border' : ''} ${
                       cell && cell.bottomBorder ? 'bottom-border' : ''
                     } ${cell && cell.topBorder ? 'top-border' : ''} ${
+                      cell && cell.noBorder ? 'no-Border' : ''} ${
                       cell && cell.robotColorDir ? 'robotColorDir' : ''} ${
                       cell && cell.robotColor ? 'robotColor' : ''}`}
                     style={{
