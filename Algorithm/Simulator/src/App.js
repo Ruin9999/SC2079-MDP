@@ -322,7 +322,7 @@ export default function App(){
     "size_y": 20,
     "robot_x": 1,
     "robot_y": 1,
-    "robot_dir": 0
+    "robot_direction": 0
   });
 
   var requestOptions = {
@@ -332,7 +332,7 @@ export default function App(){
     redirect: 'follow'
   };
 
-  fetch("https://mdpapi.kyaw.tech/path", requestOptions)
+  fetch("http://127.0.0.1:5000/navigate", requestOptions)
     .then(response => response.text())
     .then(result => {
       const json = JSON.parse(result)
