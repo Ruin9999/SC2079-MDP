@@ -64,7 +64,8 @@ def start_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
-        print(f"Server listening on {HOST}:{PORT}")
+        print(f"[LISTENING] Server is listening on {HOST}:{PORT}")
+
 
         while True:  # Keep server running to accept multiple connections
             conn, addr = s.accept()

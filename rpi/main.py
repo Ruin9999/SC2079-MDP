@@ -12,8 +12,10 @@ from client_algo import AlgorithmClient
 from client_ir import ImageRecognitionClient
 from STM32 import STM32Server
 
+DISCONNECT_MESSAGE = "!DISCONNECT"
+
 def startBTServer(bt_queue, running_flag, ir_event):
-    print("Connecting to Android")
+    print("[CONNECTING] to Android...")
     while running_flag[0]:
         if not bt_queue.empty():
             msg = bt_queue.get()
@@ -35,7 +37,7 @@ def startBTServer(bt_queue, running_flag, ir_event):
             else:
                 # Handle other commands or continue loop
                 continue
-    print("Disconnecting from Android Bluetooth")
+    print("[DISCONNECTING] from Android Bluetooth")
 
     # bt_server = BluetoothServer()
     # try:
@@ -58,7 +60,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
     HOST = '192.168.80.27'
     PORT = 2040
     client = AlgorithmClient(HOST,PORT)
-    print("Connecting to Algo Server")
+    print("[CONNECTING] to Algo Server...")
     client.connect()
 
     #test - assume that msg received from android and is put into queue
@@ -108,7 +110,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                             stm32_queue.put(command)
       
 
-    print("Disconnecting from Algo Server")
+    print("[DISCONNECTING] from Algo Server...")
     client.disconnect()
 
 
