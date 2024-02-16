@@ -7,8 +7,8 @@ PORT = 2040
 
 # Change to your laptop host ip when connected to RPI Wifi
 # use ipconfig to find your laptop host ip 
-# HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
-HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+#HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
 #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
 ADDR = (HOST, PORT)
@@ -21,7 +21,8 @@ server.bind(ADDR)
 def create_response():
     # Create and return the JSON response
     response = {
-            "commands": ["FW050", "FIN"],
+            #"commands": ["FW015", "FIN"],
+            "commands": ["FW010", "FW005", "BR001", "FW020", "FW005", "BR001", "SNAP1_R", "BR001", "FR000", "BW001", "BR000", "SNAP2_C", "FIN"],
             #"commands": ["FW090", "FW050", "BR000", "FW020", "FW020", "BR000", "SNAP1_R", "BR010", "FR000", "BW010", "BR000", "SNAP2_C", "FIN"],
             "distance": 46.0,
             "path": [{"d": 0, "s": -1, "x": 1, "y": 1}, {"d": 2, "s": -1, "x": 5, "y": 3}, {"d": 2, "s": -1, "x": 6, "y": 9}]

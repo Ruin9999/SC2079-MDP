@@ -38,9 +38,12 @@ def startBTServer(bt_queue, running_flag, ir_event):
                     number_part, predict_id, direction = optional_parts
                     print(f"IR optional parts: Number part = {number_part}, Predict ID = {predict_id}, Direction = {direction}")
                     ir_event.set()
-            elif command == "FIN":
+            elif (command== "FIN"):
                 print(f"FIN msg: {msg}\n")
                 running_flag[0] = False
+            # elif command == "FIN":
+            #     print(f"FIN msg: {msg}\n")
+            #     running_flag[0] = False
             else:
                 # Handle other commands or continue loop
                 continue
@@ -67,8 +70,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
 
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
-    # HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
-    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
     #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
     PORT = 2040
@@ -130,8 +133,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
 def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
-    # HOST = '192.168.93.1' #Aaron Laptop (MDPGrp16)
-    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
     #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     PORT = 2030
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
@@ -152,15 +155,16 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
     client.disconnect()
 
 def startSTMServer(stm32_queue, bt_queue, running_flag, stm32_event):
-    print("Connecting to STM")
+    print("[CONNECTING] to STM...")
     STM = STM32Server()
     STM.connect()
-
-    while running_flag[0]:
+    #while running_flag[0]:
+    while (True):
+        # if (received_msg =="FIN"):
+        #     break
         if not stm32_queue.empty():
             msg = stm32_queue.get()
             print(f"stm32 queue msg = {msg}\n")
-            #msg = "FW090"
             STM.send(msg)
 
             received_msg = None
