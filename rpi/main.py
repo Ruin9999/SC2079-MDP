@@ -95,7 +95,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                         ir_event.set()
                 elif command == "FIN":
                     print(f"FIN msg: {msg}\n")
-                    msg_to_android = f"STATUS/Finishing"
+                    msg_to_android = f"STATUS/Stop"
                     print(f"sending status to android: {msg_to_android}")
                     bt_server.send_data(msg_to_android)
                     # delay the disconnection
