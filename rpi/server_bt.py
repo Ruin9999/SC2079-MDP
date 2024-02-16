@@ -14,13 +14,13 @@ class BluetoothServer:
 
         self.server_sock.listen(1)
         self.port = self.server_sock.getsockname()[1]
-        #self.server_sock.bind(("192.168.41.41",1))
+        # self.server_sock.bind(("192.168.16.16",1))
         
         if self.port != 1:
             print("close and reconnect")
             
         self.uuid = "00001101-0000-1000-8000-00805F9B34FB"
-        advertise_service(self.server_sock, "MDP-Server",
+        advertise_service(self.server_sock, "MDP-Server Group 16",
                           service_id=self.uuid,
                           service_classes=[self.uuid, SERIAL_PORT_CLASS],
                           profiles=[SERIAL_PORT_PROFILE])
@@ -32,25 +32,16 @@ class BluetoothServer:
 
     def receive_data(self):
         try:
-            #while True:
-                #print("In while loop...")
-                ##self.client_sock.send('dssjhh')
             data = self.client_sock.recv(1024)
-                #print("Received %s" % data)
             data = data.decode('utf-8')
-            #if len(data) == 0:
-             #   break
-            print("Received %s" % data)
-            self.client_sock.send(data.encode('utf-8'))
-                #print("Received %s" % data.encode('utf-8'))
-            
+            # print("Received %s" % data)
+            # self.client_sock.send(data.encode('utf-8'))
             return data
             
         except IOError:
             pass
 
     def send_data(self, data):
-        #print('in send ' + data)
         try:
             self.client_sock.send(data.encode('utf-8'))
         except Exception as e:
@@ -65,46 +56,32 @@ class BluetoothServer:
 if __name__ == "__main__":
     #print("['']")
     bt_server = BluetoothServer()
-    #bt_server.send_data('Listening...')
+    first_time = True
+
     try:
-        #messages = ['m1', 'm2']
-        #for m in messages:
+        data = bt_server.receive_data()
+        print(f"data = {data}")
+
         while True:
-            data = bt_server.receive_data()
-            # algo to rpi - 15,15
-            # rpi to bluetooth - (15+5)/10, (15-5)/10
-            #bt_server.send_data("ROBOT,<11>,<4>,<E>");
-            bt_server.send_data("START")
-            time.sleep(32)
-            bt_server.send_data("FINISH|PATH")
-#             bt_server.send_data("TARGET|1|11|")
-#             bt_server.send_data("TARGET|2|12|")
-#             bt_server.send_data("TARGET|3|14|")
-#             bt_server.send_data("TARGET|4|15|")
-#             bt_server.send_data("TARGET|5|16|")
-#             bt_server.send_data("TARGET|6|39|")
+            if first_time:
+                robot_messages = [
+                    "ROBOT/1/2/N",
+                    "ROBOT/10/3/N",
+                    "ROBOT/5/4//E"  # Assuming you want to include a sleep after this message as well
+                ]
 
-#             time.sleep(1)
-#             print("0, N")
-#             bt_server.send_data("ROBOT|2|2|0");
-#             time.sleep(5)
-#             print("90, E, right")
-#             bt_server.send_data("ROBOT|8|13|90");
-#             time.sleep(1)
-#             print("180, S")
-#             bt_server.send_data("ROBOT|2|2|180");
-#             time.sleep(5)
-#             print("-90, W")
-#             bt_server.send_data("ROBOT|9|7|-90");
+                for message in robot_messages:
+                    bt_server.send_data(message)
+                    time.sleep(1)  # Sleep for 1 second after each message
 
-#             bt_server.send_data("TARGET|2|29");            
-#             bt_server.send_data("TARGET|3|36");            
-#             bt_server.send_data("TARGET|4|37");            
-#             bt_server.send_data("TARGET|5|38");                         
-#             bt_server.send_data("TARGET|6|39");            
-#             bt_server.send_data("TARGET|7|40");            
-#             bt_server.send_data("TARGET|8|33");            
+                count = 1
+                for i in range(11, 13):  # Note that the end value in range is exclusive, so use 41 to include 40
+                    message = f"TARGET/{count}/{i}"
+                    bt_server.send_data(message)
+                    count += 1
+                    time.sleep(1)
+                
+                first_time = False
 
-            
     except KeyboardInterrupt:
         bt_server.close_connection()
