@@ -17,7 +17,7 @@ from STM32 import STM32Server
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
 def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
-    print("[CONNECTING] to Android...")
+    print("Connecting to Android Bluetooth...")
     bt_server = BluetoothServer()
 
     receive_data = None
@@ -35,7 +35,6 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
 
                     if data_type == "START/EXPLORE":
                         print(f"Processing START/EXPLORE command: {receive_data}")
-                        algo_queue.put(receive_data)
                         break 
                     else:
                         # Handle other data types or commands
@@ -48,7 +47,6 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
             else:
                 print("No data received, or connection lost. Retrying...")
 
-        print(f"Received data from Android: {receive_data}")
         algo_queue.put(receive_data)
 
         while running_flag[0]:
@@ -78,7 +76,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                             print(f"sending robot to android: {msg_to_android}")
                             bt_server.send_data(msg_to_android)
                             time.sleep(1)
-                            stm32_event.set()
+                    stm32_event.set()
 
                 elif command == "IR":
                     print(f"IR msg: {msg}")
@@ -98,13 +96,15 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                     msg_to_android = f"STATUS/Stop"
                     print(f"sending status to android: {msg_to_android}")
                     bt_server.send_data(msg_to_android)
-                    # delay the disconnection
-                    time.sleep(60)
-                    running_flag[0] = False
+                    break
                 else:
                     # Handle other commands or continue loop
-                    continue
-        print("[DISCONNECTING] from Android Bluetooth")
+                    continue           
+        # delay the disconnection
+        time.sleep(30)
+        running_flag[0] = False
+
+        print("Disconnecting from Android Bluetooth")
         bt_server.close_connection()
 
     except KeyboardInterrupt:
@@ -129,7 +129,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
     status_response = client.check_status()  # This method should make a GET request to the /status endpoint
 
     if status_response and status_response.get('status') == 'OK':
-        print("Server Status: OK")
+        print("[CONNECTED] to Algo Server\n")
         # Test - assume that msg received from android and is put into queue
         # algo_queue.put(1)
         while running_flag[0]:
@@ -139,7 +139,6 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                 # Example navigation data to send
                 # env = {"type":"START\/EXPLORE","size_x":20,"size_y":20,"robot_x":1,"robot_y":1,"robot_direction":0,"obstacles":[{"x":5,"y":6,"id":1,"d":4},{"x":8,"y":1,"id":2,"d":0},{"x":11,"y":10,"id":3,"d":2}]}
 
-
                 response_received = None
                 try_count = 1
 
@@ -148,13 +147,13 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                     try_count += 1
 
                 if response_received:
-                    print("Extracting the data from response:")
+                    print("\nExtracting the data from response:")
                     # Extracting the needed parts from response_received
                     commands_data = response_received.get("data", {})
                     commands = commands_data.get("commands", [])
                     distance = commands_data.get("distance", None)
                     path = commands_data.get("path", [])
-                    print("Commands:", commands, "\n")
+                    print("Commands:", commands)
                     print("Distance:", distance)
                     print("Path:", path)
 
@@ -169,7 +168,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                         for command, associated_path in command_path:
                             ir_event.wait()
                             stm32_event.wait()
-
+                            print(f"\nCommand: {command}")
                             if command.startswith(substring):
                                 ir_event.clear()
                                 parts = command.split("_")
@@ -217,16 +216,16 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
     client.disconnect()
 
 def startSTMServer(stm32_queue, bt_queue, running_flag, stm32_event):
-    print("[CONNECTING] to STM...")
+    print("Connecting to STM...")
     # STM = STM32Server()
     # STM.connect()
-    #while running_flag[0]:
-    while (True):
+    while running_flag[0]:
+    # while (True):
         # if (received_msg =="FIN"):
         #     break
         if not stm32_queue.empty():
             msg, associated_path = stm32_queue.get()
-            print(f"stm32 queue msg = {msg}\n")
+            print(f"stm32 queue msg = {msg}")
             # STM.send(msg)
 
             received_msg = None
@@ -243,7 +242,7 @@ def startSTMServer(stm32_queue, bt_queue, running_flag, stm32_event):
                 stm32_event.set()
         
     print("Disconnecting from STM")
-    STM.disconnect()
+    # STM.disconnect()
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ class STM32Server:
                 self.stm = serial.Serial(port=self.serial_port, baudrate=self.baud_rate, timeout=None)
                 if self.stm is not None:
                     print(f"[STM] Established connection on Serial Port: {self.serial_port} Baud Rate: {self.baud_rate}")
+                    print(f"[CONNECTED] to STM.")
                     retry = False
             except IOError as error:
                 print(f"[Error] Failed to establish STM Connection, retrying connection!")
@@ -26,7 +27,7 @@ class STM32Server:
         try:
                 self.stm.close()
                 self.stm = None
-                print(f"[STM] STM has been disconnected.")
+                print(f"[DISCONNECTED] from STM.")
         except Exception as error:
             print(f"[Error] Failed to disconnect STM")
 

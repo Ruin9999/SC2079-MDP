@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # Check server status
     status = client.check_status()
     if status:
-        print("Server Status:", status)
+        print("Algo Server Status:", status)
 
     # Send navigation data
     navigation_data = {

@@ -29,6 +29,7 @@ class BluetoothServer:
         print("Waiting for connection on RFCOMM channel %d" % self.port)
         self.client_sock, self.client_info = self.server_sock.accept()
         print("Accepted connection from ", self.client_info)
+        print("[CONNECTED] to Android Bluetooth.")
 
     def receive_data(self):
         try:
@@ -48,7 +49,7 @@ class BluetoothServer:
             print(e)
 
     def close_connection(self):
-        print("Disconnected")
+        print("[DISCONNECTED] from Android Bluetooth.")
         self.client_sock.close()
         self.server_sock.close()
         print("All done")
