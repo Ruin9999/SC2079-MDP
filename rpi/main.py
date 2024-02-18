@@ -84,8 +84,6 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                         # optional_parts is a list, handle accordingly
                         number_part, predict_id, direction = optional_parts
                         print(f"IR optional parts: Number part = {number_part}, Predict ID = {predict_id}, Direction = {direction}")
-                        # msg_to_android = f"Photo for Obstacle {number_part} taken."
-                        predict_id = -1
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
