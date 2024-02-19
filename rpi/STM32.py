@@ -16,6 +16,7 @@ class STM32Server:
                 self.stm = serial.Serial(port=self.serial_port, baudrate=self.baud_rate, timeout=None)
                 if self.stm is not None:
                     print(f"[STM] Established connection on Serial Port: {self.serial_port} Baud Rate: {self.baud_rate}")
+                    print(f"[CONNECTED] to STM.")
                     retry = False
             except IOError as error:
                 print(f"[Error] Failed to establish STM Connection, retrying connection!")
@@ -26,7 +27,7 @@ class STM32Server:
         try:
                 self.stm.close()
                 self.stm = None
-                print(f"[STM] STM has been disconnected.")
+                print(f"[DISCONNECTED] from STM.")
         except Exception as error:
             print(f"[Error] Failed to disconnect STM")
 
@@ -34,9 +35,12 @@ class STM32Server:
             #print("Receiving ...")
             try:
                 if self.stm.inWaiting() > 0:
-                        message = self.stm.read(self.stm.inWaiting()).decode("utf-8").strip()
-                        print(f"Received from stm: {message}")
-                        return message
+                        #message = self.stm.read(self.stm.inWaiting()).decode("utf-8").strip()
+                        raw_dat = self.stm.read(1)            
+                        dat = raw_dat.strip().decode()
+                        # message = self.stm.read(self.stm.inWaiting()).decode().strip()
+                        # print(f"Received from stm: {message}")
+                        return dat
                 #return None
             except Exception as error:
                     print(f"[Error] Failed to receive from STM: {str(error)}. Retrying...")
@@ -47,7 +51,8 @@ class STM32Server:
             #while True:
             #print('[STM] in while loop')
             print(f"[STM] Message to STM: {message}")
-            self.stm.write(f"{message}\n".encode("utf-8"))
+            # self.stm.write(f"{message}\n".encode("utf-8"))
+            self.stm.write(f"{message}".encode())
                 #if(len(message) == 
             #self.stm.write(message)
         except Exception as error:
@@ -58,13 +63,14 @@ if __name__ == "__main__":
     #displacement = ["center,0,reverse,15", "left,90,forward,5","right,180,forward,5"]
     STM = STM32Server()
     STM.connect()
-    STM.send("0FW090")
+    STM.send("FW090")
 
     received_msg = None
 
     while(True):
         received_msg = STM.recv()
-        if(received_msg):
+        if received_msg == "R":
+            print(f"Received from stm: {received_msg}")
             break
 
     STM.disconnect()

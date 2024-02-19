@@ -12,17 +12,17 @@ class ImageRecognitionClient:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self.socket.connect((self.HOST, self.PORT))
-        print("Connected to the server.")
+        print("[CONNECTED] to the Image Rec server.")
 
     def disconnect(self):
         if self.socket:
             self.socket.close()
-            print("Disconnected from the server.")
+            print("[DISCONNECTED] from the Image Rec server.")
         self.socket = None
 
     def send_file(self, file_path, direction):
         if not self.socket:
-            print("Not connected to the server.")
+            print("Not connected to the Image Rec server.")
             return
         
         try:
