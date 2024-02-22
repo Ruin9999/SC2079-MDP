@@ -40,7 +40,6 @@ class STM32Server:
     def send(self, message):
         try:
             print(f"[STM] Sending message to STM: {message}")
-            self.stm.reset_output_buffer()
             self.stm.write(message.encode())
             self.stm.flush()
         except serial.SerialException as e:
@@ -50,7 +49,8 @@ if __name__ == "__main__":
     STM = STM32Server()
     STM.connect()
 
-    commands = ["FL000","BR010"]
+    # commands = ["FW020", "FW010", "FW030", "BW010", "BW010", "BW010", "FW010", "FW010", "FW010"]
+    commands = ["FL090", "BW010"]
             
     for command in commands:
         STM.send(command)
@@ -59,6 +59,7 @@ if __name__ == "__main__":
             received_msg = STM.recv()
             if received_msg == "R":
                 print(f"Received 'R' from STM: {received_msg}")
+                time.sleep(0.5)
                 break
 
     STM.disconnect()
