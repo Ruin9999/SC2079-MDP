@@ -320,9 +320,9 @@ export default function App(){
     "retrying": false,
     "size_x": 20,
     "size_y": 20,
-    "robot_x": 1,
-    "robot_y": 1,
-    "robot_direction": 0
+    "robot_x": botX,
+    "robot_y": botY,
+    "robot_direction": botDir
   });
 
   var requestOptions = {
