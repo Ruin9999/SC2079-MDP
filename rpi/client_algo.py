@@ -1,65 +1,51 @@
-import socket
-import json
+import requests
 
 class AlgorithmClient:
-    def __init__(self, host, port):
-        self.HEADER = 64
-        self.FORMAT = 'utf-8'
-        self.DISCONNECT_MESSAGE = "!DISCONNECT"
-        self.ADDR = (host, port)
-        self.client = None
+    def __init__(self, base_url):
+        self.base_url = base_url
 
-    def connect(self):
-        if self.client is None:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect(self.ADDR)
-            print("Connected to the Algo server.")
-
-    def send(self, obj):
-        if self.client is None:
-            print("Algo Client is not connected.")
+    def check_status(self):
+        """Check the status of the server."""
+        response = requests.get(f"{self.base_url}/status")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error checking status: {response.status_code}")
             return None
 
-        message = obj.to_dict() if hasattr(obj, 'to_dict') else obj
-        serialized_obj = json.dumps(message)
-        obj_length = len(serialized_obj)
-        send_length = str(obj_length).encode(self.FORMAT)
-        send_length += b' ' * (self.HEADER - len(send_length))
-
-        self.client.send(send_length)
-        print("Sending to Algo Server:", serialized_obj, "\n")
-        self.client.send(serialized_obj.encode(self.FORMAT))
-        
-        # Wait for and print the main JSON response from the server
-        response_header = self.client.recv(self.HEADER).decode(self.FORMAT).strip()
-        if response_header:
-            response_length = int(response_header)
-            main_response = self.client.recv(response_length).decode(self.FORMAT)
-            print("Response from Algo server:", main_response, "\n")
-            return json.loads(main_response)
-
-        return None
-
-    def disconnect(self):
-        if self.client is not None:
-            # Send a disconnect message to the server if needed
-            # self.send(self.DISCONNECT_MESSAGE)
-            print("Disconnecting from the Algo server.")
-            self.client.close()
-            self.client = None
-            print("Disconnected from the Algo server.")
+    def navigate(self, navigation_data):
+        """Send navigation data to the server and get the path and commands."""
+        response = requests.post(f"{self.base_url}/navigate", json=navigation_data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error sending navigation data: {response.status_code}")
+            return None
 
 if __name__ == "__main__":
-    HOST = '192.168.80.27'
-    PORT = 2040
-    client = AlgorithmClient(HOST, PORT)
-    client.connect()
-    env = {"size_x": 100, "size_y": 100, "robot_x": 10, "robot_y": 10, "robot_direction": 'N'}  # Example object to send
+    base_url = 'http://192.168.16.11:2040'  # The base URL where your Flask app is running
+    client = AlgorithmClient(base_url)
     
-    response_received = client.send(env)
-    if response_received:
-        print("Extracting the data from response\n")
-        commands = response_received["commands"] 
-        print("Commands:", commands)
+    # Check server status
+    status = client.check_status()
+    if status:
+        print("Algo Server Status:", status)
 
-    client.disconnect()
+    # Send navigation data
+    navigation_data = {
+        "type": "START/EXPLORE",
+        "size_x": 20,
+        "size_y": 20,
+        "robot_x": 1,
+        "robot_y": 1,
+        "robot_direction": 0,
+        "obstacles": [
+            {"x": 5, "y": 6, "id": 1, "d": 4},
+            {"x": 8, "y": 1, "id": 2, "d": 0},
+            {"x": 11, "y": 10, "id": 3, "d": 2}
+        ]
+    }
+    
+    navigation_response = client.navigate(navigation_data)
+    if navigation_response:
+        print("Navigation Response:", navigation_response)

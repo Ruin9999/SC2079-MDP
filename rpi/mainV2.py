@@ -16,10 +16,9 @@ from STM32 import STM32Server
 
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
-def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
+def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event):
     print("Connecting to Android Bluetooth...")
     bt_server = BluetoothServer()
-
     receive_data = None
 
     try:
@@ -48,9 +47,13 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                 print("No data received, or connection lost. Retrying...")
 
         algo_queue.put(receive_data)
+        algo_start_event.set()
 
         while running_flag[0]:
             if not bt_queue.empty():
+                bt_start_event.wait()
+                bt_start_event.clear()
+
                 msg = bt_queue.get()
                 command, *optional_parts = msg  # Correct way to unpack
                 android_response = None
@@ -60,7 +63,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                         msg_to_android = optional_parts[0]
                         print(f"sending status to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
-                        time.sleep(1)
+                        time.sleep(0.3)
 
                 elif command == "STM32":
                     print(f"STM32 msg: {msg}")
@@ -75,8 +78,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                             msg_to_android = f"ROBOT/{x}/{y}/{d}"
                             print(f"sending robot to android: {msg_to_android}")
                             bt_server.send_data(msg_to_android)
-                            time.sleep(1)
-                    stm32_event.set()
+                            time.sleep(0.3)
 
                 elif command == "IR":
                     print(f"IR msg: {msg}")
@@ -87,17 +89,21 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
-                        time.sleep(1)
-                        ir_event.set()
+                        time.sleep(0.3)
+
                 elif command == "FIN":
                     print(f"FIN msg: {msg}\n")
                     msg_to_android = f"STATUS/Stop"
                     print(f"sending status to android: {msg_to_android}")
                     bt_server.send_data(msg_to_android)
+                    time.sleep(0.3)
                     break
                 else:
                     # Handle other commands or continue loop
-                    continue           
+                    continue
+                # start algo event at the end
+                algo_start_event.set()
+
         # delay the disconnection
         time.sleep(30)
         running_flag[0] = False
@@ -109,7 +115,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, ir_event):
         bt_server.close_connection()
 
 
-def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, ir_event, stm32_event):
+def startAlgoClient(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event):
 
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
@@ -118,7 +124,6 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
     HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
     PORT = 2040
-
     base_url = f"http://{HOST}:{PORT}"
     client = AlgorithmClient(base_url)
 
@@ -149,6 +154,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                     # Extracting the needed parts from response_received
                     commands_data = response_received.get("data", {})
                     commands = commands_data.get("commands", [])
+
                     distance = commands_data.get("distance", None)
                     path = commands_data.get("path", [])
                     print("Commands:", commands)
@@ -156,44 +162,53 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, i
                     print("Path:", path)
 
                     command_path = map_commands_to_paths({"commands": commands, "path": path})
+                    stages = ["Status Update", "Execute Command and Update Position"]
 
-                    
                     BEFORE_RUNNING = "BEFORE_RUNNING"
                     substring = "SNAP"
+                    mov_tup = ("FW", "BW", "FL", "FR", "BL", "BR")
                     msg_to_android = None
 
                     if commands:
                         for command, associated_path in command_path:
-                            ir_event.wait()
-                            stm32_event.wait()
-                            print(f"\nCommand: {command}")
-                            if command.startswith(substring):
-                                ir_event.clear()
-                                parts = command.split("_")
-                                if len(parts) == 2:
-                                    snap_command, direction = parts
-                                    number_part = snap_command[len(substring):]
-                                    msg_to_android = "STATUS/Capturing"
-                                    bt_queue.put((BEFORE_RUNNING, msg_to_android))
-                                    ir_queue.put((substring, number_part, direction))
-                                else:
-                                    print(f"Unexpected command format: {command}")
-                            elif command == "FIN":
-                                bt_queue.put((command,))
-                            else:
-                                msg_to_android = "STATUS/Moving"
-                                bt_queue.put((BEFORE_RUNNING, msg_to_android))
-                                stm32_event.clear()
-                                stm32_queue.put((command, associated_path))
+                            for stage in stages:
+                                algo_start_event.wait()
+                                algo_start_event.clear()
+
+                                print(f"\nCommand: {command}")
+                                print(f"Stage: {stage}")
+
+                                if stage == "Status Update":
+                                    if command.startswith(substring):
+                                        msg_to_android = "STATUS/Capturing"
+                                        bt_queue.put((BEFORE_RUNNING, msg_to_android))
+                                    elif command == "FIN":
+                                        bt_queue.put((command,))
+                                    elif command.startswith(mov_tup):
+                                        msg_to_android = "STATUS/Moving"
+                                        bt_queue.put((BEFORE_RUNNING, msg_to_android))
+                                    bt_start_event.set()
+
+                                elif stage == "Execute Command and Update Position":
+                                    if command.startswith(substring):
+                                        parts = command.split("_")
+                                        if len(parts) == 2:
+                                            snap_command, direction = parts
+                                            number_part = snap_command[len(substring):]
+                                            ir_queue.put((substring, number_part, direction))
+                                            ir_start_event.set()
+                                    elif command.startswith(mov_tup):
+                                        stm32_queue.put((command, associated_path))
+                                        stm_start_event.set()
     else:
         print("Failed to connect to the server or server returned an unexpected status.")
 
 
-def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
+def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_event, algo_start_event):
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
     # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
     HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     PORT = 2030
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
@@ -202,6 +217,9 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
 
     while running_flag[0]:
         if not ir_queue.empty():
+            ir_start_event.wait()
+            ir_start_event.clear()
+
             (substring, number_part, direction) = ir_queue.get()
             print(f"substring is {substring}")
             print(f"Taking a photo for obstacle no {number_part}")
@@ -209,38 +227,40 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_event):
             file_path = take_pic()
             predict_id = client.send_file(file_path, direction)
             bt_queue.put(("IR", number_part, predict_id, direction))
+            bt_start_event.set()
 
     print("Disconnecting from Image Rec Server")
     client.disconnect()
 
-def startSTMServer(stm32_queue, bt_queue, running_flag, stm32_event):
+def startSTMServer(stm32_queue, bt_queue, running_flag, stm_start_event, bt_start_event, algo_start_event):
     print("Connecting to STM...")
-    # STM = STM32Server()
-    # STM.connect()
+    STM = STM32Server()
+    STM.connect()
+
     while running_flag[0]:
-    # while (True):
-        # if (received_msg =="FIN"):
-        #     break
         if not stm32_queue.empty():
+            stm_start_event.wait()
+            stm_start_event.clear()
+
             msg, associated_path = stm32_queue.get()
             print(f"stm32 queue msg = {msg}")
-            # STM.send(msg)
-
+            STM.send(msg)
             received_msg = None
+            while(True):
+                received_msg = STM.recv()
+                # print(f"Received from stm: {received_msg}")
+                if received_msg == "R":
+                    print(f"Received R from stm: {received_msg}")
+                    break
 
-            # while(True):
-            #     received_msg = STM.recv()
-            #     if received_msg == "R":
-            #         print(f"Received from stm: {received_msg}")
-            #         break
             if associated_path:
                 bt_queue.put(("STM32", msg, associated_path))
+                bt_start_event.set()
             else:
-                time.sleep(2)
-                stm32_event.set()
+                algo_start_event.set()         
         
     print("Disconnecting from STM")
-    # STM.disconnect()
+    STM.disconnect()
 
 
 if __name__ == "__main__":
@@ -250,24 +270,21 @@ if __name__ == "__main__":
     ir_queue = queue.Queue()
     stm32_queue = queue.Queue()
 
-    # Events for ordering of threads (need to wait for each command from algo)
-    # event should be cleared as early as possible (eg clearing before putting into queue)
-    # event should be set only when all the corresponding step for a task have been completed
-    ir_event = threading.Event()
-    stm32_event = threading.Event()
-    # no need to wait at the start, so intital event is set
-    ir_event.set()
-    stm32_event.set()
+    # At the beginning of your main section
+    bt_start_event = threading.Event() 
+    algo_start_event = threading.Event()  
+    ir_start_event = threading.Event() 
+    stm_start_event = threading.Event() 
 
     # Flag to control the execution of threads
     running_flag = [True]
 
     # Creating threads for each task
     threads = [
-        threading.Thread(target=startBTServer, args=(bt_queue, algo_queue, running_flag, ir_event)),
-        threading.Thread(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_queue, bt_queue, running_flag, ir_event, stm32_event)),
-        threading.Thread(target=startIRClient, args=(ir_queue, bt_queue, running_flag, ir_event)),
-        threading.Thread(target=startSTMServer, args=(stm32_queue, bt_queue, running_flag, stm32_event))
+        threading.Thread(target=startBTServer, args=(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event)),
+        threading.Thread(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
+        threading.Thread(target=startIRClient, args=(ir_queue, bt_queue, running_flag,  ir_start_event, bt_start_event, algo_start_event)),
+        threading.Thread(target=startSTMServer, args=(stm32_queue, bt_queue, running_flag, stm_start_event, bt_start_event, algo_start_event))
     ]
 
     # Starting threads
