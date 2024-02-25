@@ -15,7 +15,7 @@ load_dotenv(dotenv_path)
 API_KEY = os.getenv('ROBOFLOW_API_KEY')
 print(API_KEY)
 # load a pre-trained yolov8n model
-model = get_roboflow_model(model_id="2024-grp-16-image-rec/5",api_key=API_KEY)
+model = get_roboflow_model(model_id="2024-grp-16-image-rec/8",api_key=API_KEY)
 
 
 def predict_id(image_file_path):
