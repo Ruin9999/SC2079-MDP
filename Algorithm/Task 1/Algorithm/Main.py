@@ -64,6 +64,12 @@ def path_finding():
 
 
 if __name__ == '__main__':
+<<<<<<< Updated upstream
     app.run(host='0.0.0.0', port=5000, debug=True)
     # app.run(host='192.168.16.11', port=2060, debug=True)
     # app.run(host='192.168.80.27', port=2040, debug=True)
+=======
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='192.168.16.22', port=2040, debug=True)
+    #app.run(host='192.168.80.27', port=2040, debug=True)
+>>>>>>> Stashed changes

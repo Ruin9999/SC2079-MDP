@@ -20,7 +20,7 @@ model = get_roboflow_model(model_id="2024-grp-16-image-rec/8",api_key=API_KEY)
 
 def predict_id(image_file_path):
     image = cv2.imread(image_file_path)
-
+    print("inside...")
     # run inference on our chosen image, image can be a url, a numpy array, a PIL image, etc.
     results = model.infer(image)
 

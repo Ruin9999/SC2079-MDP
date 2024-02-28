@@ -20,7 +20,6 @@ class ImageRecognitionClient:
             print("[DISCONNECTED] from the Image Rec server.")
         self.socket = None
 
-    #def send_file(self, file_path):
     def send_file(self, file_path, direction):
         if not self.socket:
             print("Not connected to the Image Rec server.")

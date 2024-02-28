@@ -119,9 +119,9 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_star
 
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
-    #HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    # HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
     PORT = 2040
     base_url = f"http://{HOST}:{PORT}"
@@ -153,7 +153,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_star
                     print("\nExtracting the data from response:")
                     # Extracting the needed parts from response_received
                     commands_data = response_received.get("data", {})
-                    commands = commands_data.get("commands", [])
+                    #commands = commands_data.get("commands", [])
+                    commands= ["SNAP1_R"]
 
                     distance = commands_data.get("distance", None)
                     path = commands_data.get("path", [])
@@ -166,11 +167,16 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_star
 
                     BEFORE_RUNNING = "BEFORE_RUNNING"
                     substring = "SNAP"
+                    rot_tup = ("FL", "FR", "BL", "BR")
                     mov_tup = ("FW", "BW", "FL", "FR", "BL", "BR")
                     msg_to_android = None
 
                     if commands:
                         for command, associated_path in command_path:
+                            # manually change the rotation command from 000 to 090 for turning
+                            if command.startswith(rot_tup):
+                                command = command[:2] + "090"
+
                             for stage in stages:
                                 algo_start_event.wait()
                                 algo_start_event.clear()
@@ -207,9 +213,9 @@ def startAlgoClient(algo_queue, ir_queue, stm32_queue, algo_start_event, bt_star
 def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_event, algo_start_event):
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
-    # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    # HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     PORT = 2030
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
     print("Connecting to Image Rec Server")
@@ -246,13 +252,16 @@ def startSTMServer(stm32_queue, bt_queue, running_flag, stm_start_event, bt_star
             print(f"stm32 queue msg = {msg}")
             STM.send(msg)
             received_msg = None
-            while(True):
+            while True:
                 received_msg = STM.recv()
-                # print(f"Received from stm: {received_msg}")
-                if received_msg == "R":
-                    print(f"Received R from stm: {received_msg}")
+                if received_msg:
+                    print(f"Received from stm: {received_msg}")
                     break
-
+                # print(f"Received from stm: {received_msg}")
+                # if received_msg == "R":
+                #     print(f"Received R from stm: {received_msg}")
+                #     break
+                    
             if associated_path:
                 bt_queue.put(("STM32", msg, associated_path))
                 bt_start_event.set()
