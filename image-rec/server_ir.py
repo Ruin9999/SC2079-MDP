@@ -12,7 +12,7 @@ HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
 
 PORT = 2030 
 HEADER_SIZE = 10        # Number of bytes to use for the header
-BUFFER_SIZE = 4096      # Standard size for buffer
+BUFFER_SIZE = 8192      # Standard size for buffer
 
 def receive_file(conn):
     try:
@@ -25,14 +25,14 @@ def receive_file(conn):
         # Receive the file name
         file_name = conn.recv(file_name_size).decode()
 
-        # Receive the header containing the direction size
-        direction_size = conn.recv(HEADER_SIZE)
-        if not direction_size:
-            return None  # Connection closed or error
+        # # Receive the header containing the direction size
+        # direction_size = conn.recv(HEADER_SIZE)
+        # if not direction_size:
+        #     return None  # Connection closed or error
 
-        direction_size = int(direction_size.decode().strip())
-        # Receive the direction
-        direction = conn.recv(direction_size).decode()
+        # direction_size = int(direction_size.decode().strip())
+        # # Receive the direction
+        # direction = conn.recv(direction_size).decode()
 
         
         # Receive the header containing the image size
@@ -50,12 +50,14 @@ def receive_file(conn):
                 break
             data.extend(packet)
 
-        file_path = f"images/{file_name}"
+        #file_path = f"images/{file_name}"
+        file_path = f"{file_name}"
+
 
         # Save the file data to a file with the received name
         with open(file_path, 'wb') as file:
             file.write(data)
-        return file_path, direction
+        return file_path
 
     except Exception as e:
         print(f"Error receiving file: {e}")
@@ -72,12 +74,14 @@ def start_server():
             with conn:
                 print(f"Connected by {addr}")
                 result = receive_file(conn)  # Receive the result as a single variable
-                
+                print(f"Result:{result} ")
                 if result:  # Check if result is not None
-                    file_path, direction = result  # Now unpack safely
-                    if file_path and direction:
+                    file_path = result  # Now unpack safely
+                    if file_path:
                         print("File received and saved successfully.")
-                        print(f"Direction received: {direction}")
+                        #print(f"Direction received: {direction}")
+                        #new_str = "images/" + file_path
+                        #print(f"new_str: {new_str}")
                         class_name = predict_id(file_path)  # Perform prediction
                         class_id = str(mapping.get(class_name, -1))  # Use .get() to handle None
                         print(f"Predicted ID: {class_id}")

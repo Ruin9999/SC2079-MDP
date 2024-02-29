@@ -21,7 +21,7 @@ class ImageRecognitionClient:
         self.socket = None
 
     #def send_file(self, file_path):
-    def send_file(self, file_path, direction):
+    def send_file(self, file_path):
         if not self.socket:
             print("Not connected to the Image Rec server.")
             return
@@ -36,12 +36,12 @@ class ImageRecognitionClient:
             self.socket.sendall(file_name_header)
             self.socket.sendall(file_name_encoded)
 
-           # Send the direction size and direction
-            direction_encoded = direction.encode('utf-8')
-            direction_length = str(len(direction_encoded)).encode('utf-8')
-            direction_header = direction_length + b' ' * (self.HEADER_SIZE - len(direction_length))
-            self.socket.sendall(direction_header)
-            self.socket.sendall(direction_encoded)    
+        #    # Send the direction size and direction
+        #     direction_encoded = direction.encode('utf-8')
+        #     direction_length = str(len(direction_encoded)).encode('utf-8')
+        #     direction_header = direction_length + b' ' * (self.HEADER_SIZE - len(direction_length))
+        #     self.socket.sendall(direction_header)
+        #     self.socket.sendall(direction_encoded)    
             
             # Read and send the file data
             with open(file_path, 'rb') as file:
