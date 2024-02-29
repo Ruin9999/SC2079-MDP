@@ -11,7 +11,7 @@ class Grid:
     def __init__(self, width : int, height : int):
         self.width = width
         self.width  = height
-        self.obstacles : List[Cell] = []
+        self.obstacles : List[Obstacle] = []
         
     def add_obstacle(self, obstacle : Obstacle):
         if obstacle not in self.obstacles:

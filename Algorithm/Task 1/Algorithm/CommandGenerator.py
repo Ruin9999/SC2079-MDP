@@ -238,9 +238,9 @@ class CommandGenerator:
 
                 if steps != 90:
                     if (steps + 10) < 100:
-                        compressed_commands[-1] = "FW0{}".format(steps + 10)
+                        compressed_commands[-1] = "BW0{}".format(steps + 10)
                     else:
-                        compressed_commands[-1] = "FW{}".format(steps + 10)
+                        compressed_commands[-1] = "BW{}".format(steps + 10)
                     continue
 
             # If both commands are FW
