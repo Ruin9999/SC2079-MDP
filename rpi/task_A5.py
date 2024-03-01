@@ -38,47 +38,47 @@ def ir_server(stm32_queue, ir_queue, R_queue):
             # print(f"Direction is {direction}")
             file_path = take_pic()
             #print()
-            predict_id = client.send_file(file_path)
+            predict_id = client.send_file(file_path, "C")
             time.sleep(1.0)
-            ir_queue.put(predict_id)
+            result = ir_queue.put(predict_id)
             # bt_queue.put(("IR", number_part, predict_id, direction))
             # bt_start_event.set()
 
     print("Disconnecting from Image Rec Server")
     client.disconnect()
 
-# def startSTMServer(stm32_queue, running_flag, ir_queue):
-#     print("Connecting to STM...")
-#     STM = STM32Server()
-#     STM.connect()
+def startSTMServer(stm32_queue, running_flag, ir_queue):
+    print("Connecting to STM...")
+    STM = STM32Server()
+    STM.connect()
 
-#     while running_flag[0]:
-#         if not stm32_queue.empty():
-#             stm_start_event.wait()
-#             stm_start_event.clear()
+    while running_flag[0]:
+        if not stm32_queue.empty():
+            stm_start_event.wait()
+            stm_start_event.clear()
 
-#             msg, associated_path = stm32_queue.get()
-#             print(f"stm32 queue msg = {msg}")
-#             STM.send(msg)
-#             received_msg = None
-#             while True:
-#                 received_msg = STM.recv()
-#                 if received_msg:
-#                     print(f"Received from stm: {received_msg}")
-#                     break
-#                 # print(f"Received from stm: {received_msg}")
-#                 # if received_msg == "R":
-#                 #     print(f"Received R from stm: {received_msg}")
-#                 #     break
+            msg, associated_path = stm32_queue.get()
+            print(f"stm32 queue msg = {msg}")
+            STM.send(msg)
+            received_msg = None
+            while True:
+                received_msg = STM.recv()
+                if received_msg:
+                    print(f"Received from stm: {received_msg}")
+                    break
+                # print(f"Received from stm: {received_msg}")
+                # if received_msg == "R":
+                #     print(f"Received R from stm: {received_msg}")
+                #     break
                     
-#             # if associated_path:
-#             #     bt_queue.put(("STM32", msg, associated_path))
-#             #     bt_start_event.set()
-#             # else:
-#             #     algo_start_event.set()         
+            # if associated_path:
+            #     bt_queue.put(("STM32", msg, associated_path))
+            #     bt_start_event.set()
+            # else:
+            #     algo_start_event.set()         
         
-#     print("Disconnecting from STM")
-#     STM.disconnect()
+    print("Disconnecting from STM")
+    STM.disconnect()
 
 
 def a5_main(stm32_queue, ir_queue, R_queue):
@@ -91,12 +91,12 @@ def a5_main(stm32_queue, ir_queue, R_queue):
     STM.connect()
 
     roundCount = 1
-    STM.send("FW025")
+    STM.send("FW030")
     time.sleep(0.5)
     while (irFlag>=0):
         print("Round No. " + str(roundCount))
 
-        while(running_flag[0]):
+        while(True):
             messageRec = STM.recv()
             time.sleep(0.5)
 
@@ -114,14 +114,12 @@ def a5_main(stm32_queue, ir_queue, R_queue):
                 time.sleep(2.0)
                 result = ir_queue.get()
 
-                if (result == 41 or result==-1):
+                if (result == "41" or "-1"):
                     roundCount+=1
                     STM.send("FR090")
-                    time.sleep(0.5)
                     break
-                elif(result!=41 or result !=-1):
+                elif(result!="41" or result !="-1"):
                     print(f"Predict image is{result} ")
-                    running_flag[0]=False
                     irFlag=-1
                     STM.disconnect()
                     print("[DISCONNECTING] STM is disconnecting...")
@@ -149,9 +147,9 @@ if __name__ == "__main__" or "__init__":
     # Flag to control the execution of threads
     running_flag = [True]
 
-    # # Creating threads for each task
+    # Creating threads for each task
     threads = [
-        # threading.Thread(target=startSTMServer, args=(stm32_queue, running_flag, ir_queue)),
+        threading.Thread(target=startSTMServer, args=(stm32_queue, running_flag, ir_queue)),
         threading.Thread(target=ir_server, args=(stm32_queue, ir_queue, R_queue)),
         #threading.Thread(target=startSTMServer, args=(stm32_queue, bt_queue, running_flag)),
         threading.Thread(target=a5_main, args=(stm32_queue, ir_queue, R_queue)),

@@ -25,11 +25,11 @@ def predict_id(image_file_path):
     results = model.infer(image)
 
     # print results
-    #print()
-    print(f"Within function predict_id:{results}")
+    print()
+    print(results)
 
     #show annotation
-    show_annotation(image, results)
+    show_annotation(image,results)
 
     # extract class name
     class_name = None
