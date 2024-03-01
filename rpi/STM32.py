@@ -17,7 +17,7 @@ class STM32Server:
                 break
             except serial.SerialException as e:
                 print(f"[Error] Failed to establish STM Connection: {e}. Retrying...")
-                time.sleep(1)
+                time.sleep(1.0)
 
     def disconnect(self):
         if self.stm:
@@ -50,8 +50,12 @@ if __name__ == "__main__":
     STM.connect()
 
     # commands = ["FW020", "FW010", "FW030", "BW010", "BW010", "BW010", "FW010", "FW010", "FW010"]
-    commands = ["FL090", "BW010"]
-            
+    # commands = ["FL090", "BW010"]
+    commands = ["FW020",
+                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
+                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
+                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020"]
+
     for command in commands:
         STM.send(command)
         print(f"Sent to STM: {command}")
