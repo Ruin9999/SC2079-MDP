@@ -75,7 +75,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                             msg_to_android = f"ROBOT/{x}/{y}/{d}"
                             print(f"sending robot to android: {msg_to_android}")
                             bt_server.send_data(msg_to_android)
-                            time.sleep(0.3)
+                            time.sleep(0.5)
 
                 elif command == "IR":
                     print(f"IR msg: {msg}")
@@ -91,7 +91,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
-                        time.sleep(0.3)
+                        time.sleep(0.5)
 
 
 

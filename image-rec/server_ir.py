@@ -2,6 +2,8 @@ import socket
 from datetime import datetime
 from predict import Predictor
 from id_mapping import mapping
+from show_annotation import start_annotation_process
+from multiprocessing import Process, Queue
 
 # Change to your laptop host ip when connected to RPI Wifi
 # use ipconfig to find your laptop host ip 
@@ -62,7 +64,7 @@ def receive_file(conn):
         print(f"Error receiving file: {e}")
         return None, None  # Return None values indicating an error occurred
 
-def start_server():
+def start_server(show_annotation_queue):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
@@ -86,7 +88,9 @@ def start_server():
                         print(f"Direction received: {direction}")
 
                         startTime = datetime.now()
-                        class_name = predictor.predict_id(file_path)  # Perform prediction
+                        class_name, results = predictor.predict_id(file_path)  # Perform prediction
+                        show_annotation_queue.put((file_path, results))
+
                         class_id = str(mapping.get(class_name, -1))  # Use .get() to handle None
                         print(f"Predicted ID: {class_id}")
                         endTime = datetime.now()
@@ -100,4 +104,17 @@ def start_server():
                 else:
                     print("Failed to receive file or connection error.")
 
-start_server()
+
+
+if __name__ == "__main__":
+    show_annotation_queue = Queue()
+
+    process1 = Process(target=start_server, args=(show_annotation_queue,))
+    process2 = Process(target=start_annotation_process, args=(show_annotation_queue,))
+    
+    process1.start()
+    process2.start()
+
+    process1.join()
+    process2.join()
+    

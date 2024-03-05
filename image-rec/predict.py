@@ -24,7 +24,7 @@ class Predictor:
         # Print results
         print(results)
         # Show annotation
-        self.show_annotation(image, results)
+        # self.show_annotation(image, results)
 
         # Extract class name
         class_name, largest_size = None, -1
@@ -40,24 +40,24 @@ class Predictor:
         else:
             print("class_name = None")
 
-        return class_name
+        return class_name, results
 
-    def show_annotation(self, image, results):
-        # Load the results into the supervision Detections API
-        detections = sv.Detections.from_inference(results[0].dict(by_alias=True, exclude_none=True))
+    # def show_annotation(self, image, results):
+    #     # Load the results into the supervision Detections API
+    #     detections = sv.Detections.from_inference(results[0].dict(by_alias=True, exclude_none=True))
 
-        # Create supervision annotators
-        bounding_box_annotator = sv.BoundingBoxAnnotator()
-        label_annotator = sv.LabelAnnotator()
+    #     # Create supervision annotators
+    #     bounding_box_annotator = sv.BoundingBoxAnnotator()
+    #     label_annotator = sv.LabelAnnotator()
         
-        # Annotate the image with inference results
-        annotated_image = bounding_box_annotator.annotate(scene=image, detections=detections)
-        annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections)
+    #     # Annotate the image with inference results
+    #     annotated_image = bounding_box_annotator.annotate(scene=image, detections=detections)
+    #     annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections)
         
-        # Display the annotated image
-        cv2.imshow("Annotated Image", annotated_image)
-        cv2.waitKey(3000)  # Display the image for 3 seconds
-        cv2.destroyAllWindows()  # Close all OpenCV windows
+    #     # Display the annotated image
+    #     cv2.imshow("Annotated Image", annotated_image)
+    #     cv2.waitKey(3000)  # Display the image for 3 seconds
+    #     cv2.destroyAllWindows()  # Close all OpenCV windows
 
 if __name__ == "__main__":
     # Example usage
