@@ -124,8 +124,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
     #HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
     PORT = 2040
     base_url = f"http://{HOST}:{PORT}"
@@ -201,8 +201,8 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
     # Change to your laptop host ip when connected to RPI Wifi
     # use ipconfig to find your laptop host ip 
     # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     PORT = 2030
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
     print("Testing Connection to IR Server...")

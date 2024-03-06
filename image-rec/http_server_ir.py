@@ -55,8 +55,8 @@ if __name__ == '__main__':
     process.start()
     
     # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     print()
     app.run(host=HOST, port=2030, debug=True)
     

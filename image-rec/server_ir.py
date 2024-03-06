@@ -9,8 +9,8 @@ from multiprocessing import Process, Queue
 # use ipconfig to find your laptop host ip 
 #HOST = '192.168.151.23' #Aaron Laptop (NTUSECURE)
 # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-#HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+#HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
 PORT = 2030 
 HEADER_SIZE = 10        # Number of bytes to use for the header
