@@ -1,4 +1,5 @@
 from bluetooth import *
+import socket
 import os
 import time
 
@@ -8,11 +9,16 @@ class BluetoothServer:
         os.system("sudo hciconfig hci0 piscan")
         os.system("sudo chmod o+rw /var/run/sdp")
 
+        RFCOMM_CHANNEL = 1
+        #self.server_sock = BluetoothSocket(RFCOMM)
         self.server_sock = BluetoothSocket(RFCOMM)
+        #self.server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.server_sock.bind(("", RFCOMM_CHANNEL))
+        
         self.server_sock.bind(("", PORT_ANY))
         #self.server_sock.bind(("", 1))
 
-        self.server_sock.listen(1)
+        self.server_sock.listen(5)
         self.port = self.server_sock.getsockname()[1]
         # self.server_sock.bind(("192.168.16.16",1))
         

@@ -109,14 +109,13 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                 algo_start_event.set()
 
         # delay the disconnection
-        time.sleep(30)
+        time.sleep(10)
         running_flag[0] = False
 
+    finally:
         print("Disconnecting from Android Bluetooth")
         bt_server.close_connection()
 
-    except KeyboardInterrupt:
-        bt_server.close_connection()
 
 
 def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event):
@@ -258,17 +257,14 @@ def stmSendThread(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_sta
             stm32_recv_queue.put((msg, associated_path))
             stm_start_event.clear()
             time.sleep(0.1)
-        
-    print("Disconnecting from STM")
-    STM.disconnect()
 
 
 def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event):
     while running_flag[0]:
         if not stm32_recv_queue.empty():
-            msg, associated_path = stm32_recv_queue.get(timeout=3)
+            msg, associated_path = stm32_recv_queue.get(timeout=5)
             start_time = time.time()
-            timeout = 1.5
+            timeout = 3
             received_msg = None
 
             while(True):
@@ -329,5 +325,8 @@ if __name__ == "__main__":
     # Waiting for all threads to complete before exiting the main thread
     for thread in threads:
         thread.join()
+
+    print("Disconnecting from STM")
+    STM.disconnect()
 
     print("Task completed.")
