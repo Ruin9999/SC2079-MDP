@@ -12,6 +12,7 @@ class CameraManager:
 
     def warm_up(self):
         with self.camera_lock:
+            #self.camera.close()
             if not self.initialized:
                 # Sleep to allow the camera's sensor to warm up
                 sleep(2)  # Adjust time as needed
@@ -30,11 +31,14 @@ class CameraManager:
             self.camera.capture(image_path)
             print(f"Image captured and saved at {image_path}")
 
+            #self.camera.close()
+
             return image_path
 
     def close(self):
         with self.camera_lock:
             self.camera.close()
+            sleep(2.0)
 
 if __name__ == "__main__":
     # Usage

@@ -5,7 +5,8 @@ from datetime import datetime
 import json
 from environment import Environment, Obstacle
 import os
-from takepic import CameraManager
+#from takepic import CameraManager
+from takepicV0 import take_pic
 from com_path_mapping import map_commands_to_paths
 
 from server_bt import BluetoothServer
@@ -211,9 +212,10 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
     if status_response and status_response.get('status') == 'OK':
         print("[CONNECTED] to IR Server\n")
 
-        print("Initialize and Warming up Camera")
-        camera = CameraManager()
-        camera.warm_up()
+        # print("Initialize and Warming up Camera")
+
+        #camera = CameraManager()
+        #camera.warm_up()
 
         while running_flag[0]:
             if not ir_queue.empty():
@@ -223,7 +225,8 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
                 print(f"substring is {substring}")
                 print(f"Taking a photo for obstacle no {number_part}")
                 print(f"Direction is {direction}")
-                file_path = camera.take_pic()
+                # file_path = camera.take_pic()
+                file_path = take_pic()
                 
                 predict_id = None
                 startTime = datetime.now()
@@ -241,7 +244,7 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
                 bt_queue.put(("IR", number_part, predict_id, direction))
                 ir_start_event.clear()
                 bt_start_event.set()
-
+        #camera.close()
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
 
