@@ -11,7 +11,7 @@ from Obstacle import Obstacle
 from Direction import Direction
 from python_tsp.exact import solve_tsp_dynamic_programming
 
-turn_wrt_big_turns = [[3 * Constants.TURN_RADIUS, Constants.TURN_RADIUS],
+turn_wrt_big_turns = [[3 * Constants.TURN_RADIUS, 2 * Constants.TURN_RADIUS],
                   [4 * Constants.TURN_RADIUS, 2 * Constants.TURN_RADIUS]]
 
 class Navigator:
