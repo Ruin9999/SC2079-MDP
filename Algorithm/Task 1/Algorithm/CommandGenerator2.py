@@ -1,7 +1,22 @@
 from Direction import Direction
 
 class CommandGenerator:
+    
     def generate(states, obstacles):
+
+        def FLCommand() :
+            commands.append("FL{}".format("090"))
+            commands.append("BW{}".format("002"))
+
+        def FRCommand():
+            commands.append("FR{}".format("090"))
+
+        def BLCommand():
+            commands.append("BL{}".format("090"))
+
+        def BRCommand():
+            commands.append("BR{}".format("090"))
+
         """
         This function takes in a list of states and generates a list of commands for the robot to follow
         
@@ -106,20 +121,20 @@ class CommandGenerator:
                 if states[i].direction == Direction.EAST:
                     # y value increased -> Forward Right
                     if states[i].y > states[i - 1].y:
-                        commands.append("FR{}".format("090"))
+                        FRCommand()
                     # y value decreased -> Backward Left
                     else:
-                        commands.append("BL{}".format("090"))
+                        BLCommand()
 
                 # Facing west afterwards
                 elif states[i].direction == Direction.WEST:
                     # y value increased -> Forward Left
                     if states[i].y > states[i - 1].y:
-                        commands.append("FL{}".format("090"))
+                        FLCommand()
                         
                     # y value decreased -> Backward Right
                     else:
-                        commands.append("BR{}".format("090"))
+                        BRCommand()
                 else:
                     raise Exception("Invalid turing direction")
                 
@@ -129,19 +144,19 @@ class CommandGenerator:
                 if states[i].direction == Direction.NORTH:
                     # y value increased -> Forward Left
                     if states[i].y > states[i - 1].y:
-                        commands.append("FL{}".format("090"))
+                        FLCommand()
                     # y value decreased -> Backward Right
                     else:
-                        commands.append("BR{}".format("090"))
+                        BRCommand()
 
                 # Facing south afterwards
                 elif states[i].direction == Direction.SOUTH:
                     # y value increased -> Backward Left
                     if states[i].y > states[i - 1].y:
-                        commands.append("BL{}".format("090"))
+                        BLCommand()
                     # y value increased -> Forward Right
                     else:
-                        commands.append("FR{}".format("090"))
+                        FRCommand()
                 else:
                     raise Exception("Invalid turing direction")
                 
@@ -151,19 +166,19 @@ class CommandGenerator:
                 if states[i].direction == Direction.EAST:
                     if states[i].y > states[i - 1].y:
                         # y value increased -> Backward Right
-                        commands.append("BR{}".format("090"))
+                        BRCommand()
                     else:
                         # y value decreased -> Forward Left
-                        commands.append("FL{}".format("090"))
+                        FLCommand()
 
                 # Facing west afterwards
                 elif states[i].direction == Direction.WEST:
                     if states[i].y > states[i - 1].y:
                         # y value increased -> Backward Left
-                        commands.append("BL{}".format("090"))
+                        BLCommand()
                     else:
                         # y value decreased -> Forward Right
-                        commands.append("FR{}".format("090"))
+                        FRCommand()
                 else:
                     raise Exception("Invalid turing direction")
 
@@ -173,19 +188,19 @@ class CommandGenerator:
                 if states[i].direction == Direction.NORTH:
                     # y value increased -> Forward Right
                     if states[i].y > states[i - 1].y:
-                        commands.append("FR{}".format("090"))
+                        FRCommand()
                     # y value decreased -> Backward Left
                     else:
-                        commands.append("BL{}".format("090"))
+                        BLCommand()
 
                 # Facing south afterwards
                 elif states[i].direction == Direction.SOUTH:
                     # y value increased -> Backwards Right
                     if states[i].y > states[i - 1].y:
-                        commands.append("BR{}".format("090"))
+                        BRCommand()
                     # y value decreased -> Forward Left
                     else:
-                        commands.append("FL{}".format("090"))
+                        FLCommand()
                 else:
                     raise Exception("Invalid turing direction")
             else:
