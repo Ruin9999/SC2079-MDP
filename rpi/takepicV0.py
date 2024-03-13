@@ -17,7 +17,7 @@ def take_pic():
         # Use the camera as a context manager
         with PiCamera() as camera:
             camera.resolution = (640, 640)
-            sleep(2)  # Camera warm-up time
+            sleep(0.1)  # Camera warm-up time
             camera.capture(image_path)
             print("Image captured and saved")
 
