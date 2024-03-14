@@ -99,10 +99,10 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
 
                 elif command == "FIN":
                     print(f"FIN msg: {msg}\n")
-                    msg_to_android = f"STATUS/Stop"
-                    print(f"sending status to android: {msg_to_android}")
+                    msg_to_android = f"FINISH/EXPLORE"
+                    print(f"sending {msg_to_android} to android")
                     bt_server.send_data(msg_to_android)
-                    time.sleep(0.1)
+                    time.sleep(0.3)
                     break
                 else:
                     # Handle other commands or continue loop
@@ -196,6 +196,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
 
                                 elif command == "FIN":
                                     bt_queue.put((command,))
+                                    ir_queue.put((command,))
+                                    ir_start_event.set()
                                     # bt_start_event.set()
     else:
         print("Failed to connect to the Algo server or Algo server returned an unexpected status.")
@@ -224,8 +226,12 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
         while running_flag[0]:
             if not ir_queue.empty():
                 ir_start_event.wait()
+                command = ir_queue.get()
 
-                (substring, number_part, direction) = ir_queue.get()
+                if command[0] == "FIN":
+                    break
+
+                (substring, number_part, direction) = command
                 print(f"substring is {substring}")
                 print(f"Taking a photo for obstacle no {number_part}")
                 print(f"Direction is {direction}")
@@ -250,6 +256,7 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
                 ir_start_event.clear()
                 # bt_start_event.set()
         #camera.close()
+        client.display_stitched()
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
 

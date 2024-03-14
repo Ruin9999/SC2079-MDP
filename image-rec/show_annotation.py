@@ -18,13 +18,15 @@ def start_annotation_process(queue):
         if not queue.empty():
 
             item = queue.get()  # Wait for an item from the queue
-            if item == "STOP":  # Check for the termination signal
+            if item[0] == "STOP":  # Check for the termination signal
                 print("Stopping annotation process.")
                 break  # Exit the loop to end the process
             image_file_path, results = item
             image = cv2.imread(image_file_path)
             image_count += 1
             show_annotation(image, results, image_count)
+
+    showAnnotatedStitched()
 
 def archive_directory_content(directory_path):
     # Moves files with the specified extension from the given directory to an archive directory,
@@ -47,18 +49,23 @@ def show_annotation(image, results, image_count):
     # Load the results into the supervision Detections API
     detections = sv.Detections.from_inference(results[0].dict(by_alias=True, exclude_none=True))
 
-    class_name = detections.data["class_name"][0]
-    class_id = str(mapping.get(class_name, -1))
-    updated_label = class_name + ", id=" + class_id
-    # updated_label = class_name + ", " + class_id
+    class_name = "None"
+    annotated_image= image
 
-    # Create supervision annotators
-    bounding_box_annotator = sv.BoundingBoxAnnotator()
-    label_annotator = sv.LabelAnnotator()
+    if detections and detections.data and detections.data["class_name"]:
+        class_name = detections.data["class_name"][0]
+
+        class_id = str(mapping.get(class_name, -1))
+        updated_label = class_name + ", id=" + class_id
+        # updated_label = class_name + ", " + class_id
+
+        # Create supervision annotators
+        bounding_box_annotator = sv.BoundingBoxAnnotator()
+        label_annotator = sv.LabelAnnotator()
     
-    # Annotate the image with inference results
-    annotated_image = bounding_box_annotator.annotate(scene=image, detections=detections)
-    annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections, labels=[updated_label])
+        # Annotate the image with inference results
+        annotated_image = bounding_box_annotator.annotate(scene=image, detections=detections)
+        annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections, labels=[updated_label])
 
     # Save the annotated image with a unique name
     file_name = f"annotated_image{image_count}.jpg"

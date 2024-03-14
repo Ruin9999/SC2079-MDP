@@ -5,6 +5,7 @@ from predict import Predictor
 from id_mapping import mapping
 from show_annotation import start_annotation_process
 from multiprocessing import Process, Queue
+from show_stitched import showAnnotatedStitched
 
 app = Flask(__name__)
 
@@ -49,6 +50,11 @@ def upload_file():
         class_id = process_file(file_path, direction, show_annotation_queue)
         return jsonify({'message': 'File successfully uploaded', 'predicted_id': class_id}), 200
 
+@app.route('/display_stitched', methods=['POST'])
+def display_stitched():
+    show_annotation_queue.put(("STOP",))
+    return jsonify({'display_stitched': 'OK'})
+
 if __name__ == '__main__':
     show_annotation_queue = Queue()
     process = Process(target=start_annotation_process, args=(show_annotation_queue,))
@@ -60,5 +66,4 @@ if __name__ == '__main__':
     print()
     app.run(host=HOST, port=2030, debug=True)
     
-
     process.join()

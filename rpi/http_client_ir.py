@@ -27,6 +27,17 @@ class ImageRecognitionClient:
                 print(response.text)
                 return None   
         
+    def display_stitched(self):
+        response = requests.post(f"{self.server_url}/display_stitched")
+        if response.status_code == 200:
+            print("Stitched request sent to the server successfully.")
+            print(response.json())
+            return response.json()
+        else:
+            print("Failed to send stitched request to the server.")
+            print(response.text)
+            return None   
+
 if __name__ == "__main__":
     host = '192.168.80.27'  # Adjust the IP as needed
     port = 2030  # Adjust the port as needed
