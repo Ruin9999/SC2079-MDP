@@ -11,3 +11,15 @@ __pycache__/
 #image-rec
 image-rec/images/*
 !image-rec/images/.gitkeep
+
+image-rec/sample_images/*
+!image-rec/sample_images/.gitkeep
+
+image-rec/annotated_images/*
+!image-rec/annotated_images/.gitkeep
+
+image-rec/annotated_archive/*
+!image-rec/annotated_archive/.gitkeep
+
+image-rec/stitched_images/*
+!image-rec/stitched_images/.gitkeep
