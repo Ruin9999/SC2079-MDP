@@ -29,6 +29,6 @@ mapping = {
     "Right": 38,
     "Left": 39,
     "Stop": 40,
-    "Bulls Eye": 41,
+    "Bulls Eye": -1,
     None: -1
 }
