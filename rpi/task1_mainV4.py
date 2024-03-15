@@ -1,5 +1,5 @@
 import time
-from mutliprocessing import Process, Queue, Event
+from multiprocessing import Process, Queue, Event
 from datetime import datetime
 import json
 from environment import Environment, Obstacle
