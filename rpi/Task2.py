@@ -122,7 +122,7 @@ def cmdGeneratorTemp(cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm
     
     for command in commands_list:
         cmd_start_event.wait()
-        stm32_send_queue.put((command))
+        stm32_send_queue.put(command)
         cmd_start_event.clear()
         stm_start_event.set()
 
@@ -154,7 +154,7 @@ def cmdGeneratorTemp(cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm
 
     for command in commands_list:
         cmd_start_event.wait()
-        stm32_send_queue.put((command))
+        stm32_send_queue.put(command)
         cmd_start_event.clear()
         stm_start_event.set()
 
