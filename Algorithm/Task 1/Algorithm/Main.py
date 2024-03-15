@@ -1,6 +1,6 @@
 import time
                                         
-from CommandGenerator2 import CommandGenerator
+from CommandGenerator import CommandGenerator
 from Navigator import Navigator
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -43,6 +43,7 @@ def path_finding():
     i = 0
 
     print("Commands Length: {}".format(len(commands)))
+    transformed_commands = []
 
     for command in commands:
         print(command)
@@ -50,7 +51,7 @@ def path_finding():
             continue
         if command.startswith("FIN"):
             continue
-        if command[-1] == "2":
+        if command[-1] != "2":
             continue
         elif command.startswith("FW") or command.startswith("FS"):
             i += int(command[2:]) // 10
@@ -58,15 +59,34 @@ def path_finding():
             i += int(command[2:]) // 10
         else:
             i += 1
-
         print("Current i: {}".format(i))
         
         path_results.append(optimal_path[i].get_dict())
+
+
+    # Adding additional commands for turning
+    for command in commands:
+        if command.startswith("FL"):
+            transformed_commands.append("FL090")
+            transformed_commands.append("BW003")
+        elif command.startswith("FR"):
+            transformed_commands.append("FR090")
+            transformed_commands.append("BW003")
+        elif command.startswith("BL"):
+            transformed_commands.append("BL090")
+            transformed_commands.append("BW003")
+        elif command.startswith("BR"):
+            transformed_commands.append("BR090")
+            transformed_commands.append("BW003")
+        else :
+            transformed_commands.append(command)
+            
+
     return jsonify({
         "data": {
             'distance': distance,
             'path': path_results,
-            'commands': commands
+            'commands': transformed_commands,
         },
         "error": None
     })
