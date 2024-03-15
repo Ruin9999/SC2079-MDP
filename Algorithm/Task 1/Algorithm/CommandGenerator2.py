@@ -5,7 +5,7 @@ class CommandGenerator:
     def generate(states, obstacles):
 
         def FLCommand() :
-            commands.append("Fw{}".format("002"))
+            commands.append("FW{}".format("002"))
             commands.append("FL{}".format("090"))
             commands.append("BW{}".format("002"))
 
