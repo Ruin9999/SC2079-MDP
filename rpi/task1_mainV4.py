@@ -1,6 +1,5 @@
 import time
-import queue
-import threading
+from mutliprocessing import Process, Queue, Event
 from datetime import datetime
 import json
 from environment import Environment, Obstacle
@@ -47,12 +46,12 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
             else:
                 print("No data received, or connection lost. Retrying...")
 
-        algo_queue.put(receive_data)
+        algo_queue.put_nowait(receive_data)
         algo_start_event.set()
 
         while running_flag[0]:
             if not bt_queue.empty():
-                bt_start_event.wait()
+                # bt_start_event.wait()
 
                 msg = bt_queue.get()
                 command, *optional_parts = msg  # Correct way to unpack
@@ -67,47 +66,51 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                             direction_map = {0: "N", 2: "E", 4: "S", 6: "W"}
                             d = direction_map[path["d"]]
                             print(f"STM32 optional parts: msg = {msg}, x = {x}, y = {y}, d = {d}")
-                            
                             print(f"sending status to android: STATUS/Moving")
                             bt_server.send_data("STATUS/Moving")
-                            time.sleep(0.5)
-
+                            time.sleep(0.4)
+                            
                             msg_to_android = f"ROBOT/{x}/{y}/{d}"
                             print(f"sending robot to android: {msg_to_android}")
                             bt_server.send_data(msg_to_android)
-                            time.sleep(0.3)
+                            time.sleep(0.2)
 
-                elif command == "IR":
-                    print(f"IR msg: {msg}")
+                
+                elif command == "IR_CAPTURING":
+                    print(f"IR_CAPTURING msg")
+                    print(f"sending status to android: STATUS/Capturing")
+                    bt_server.send_data("STATUS/Capturing")
+                    time.sleep(0.2)
+
+
+                elif command == "IR_TARGET":
+                    print(f"IR TARGET msg: {msg}")
                     if optional_parts:  # This checks if there are any optional parts
                         # optional_parts is a list, handle accordingly
                         number_part, predict_id, direction = optional_parts
                         print(f"IR optional parts: Number part = {number_part}, Predict ID = {predict_id}, Direction = {direction}")
                         
-                        print(f"sending status to android: STATUS/Capturing")
-                        bt_server.send_data("STATUS/Capturing")
-                        time.sleep(0.5)
-                        
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
-                        time.sleep(0.3)
-
+                        time.sleep(0.2)
 
 
                 elif command == "FIN":
                     print(f"FIN msg: {msg}\n")
-                    msg_to_android = f"STATUS/Stop"
-                    print(f"sending status to android: {msg_to_android}")
+                    msg_to_android = f"FINISH/EXPLORE"
+                    print(f"sending {msg_to_android} to android")
                     bt_server.send_data(msg_to_android)
-                    time.sleep(0.1)
+                    time.sleep(0.3)
                     break
                 else:
                     # Handle other commands or continue loop
+                    time.sleep(0.1)
                     continue
                 # start algo event at the end
-                bt_start_event.clear()
-                algo_start_event.set()
+                # bt_start_event.clear()
+                if command != "IR_CAPTURING" and command != "STM32":
+                    algo_start_event.set()
 
         # delay the disconnection
         time.sleep(10)
@@ -141,7 +144,7 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
         # algo_queue.put(1)
         while running_flag[0]:
             if not algo_queue.empty():
-                env = algo_queue.get()
+                env = algo_queue.get_nowait()
 
                 # Example navigation data to send
                 # env = {"type":"START\/EXPLORE","size_x":20,"size_y":20,"robot_x":1,"robot_y":1,"robot_direction":0,"obstacles":[{"x":5,"y":6,"id":1,"d":4},{"x":8,"y":1,"id":2,"d":0},{"x":11,"y":10,"id":3,"d":2}]}
@@ -192,7 +195,9 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
 
                                 elif command == "FIN":
                                     bt_queue.put((command,))
-                                    bt_start_event.set()
+                                    ir_queue.put((command,))
+                                    ir_start_event.set()
+                                    # bt_start_event.set()
     else:
         print("Failed to connect to the Algo server or Algo server returned an unexpected status.")
 
@@ -220,12 +225,17 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
         while running_flag[0]:
             if not ir_queue.empty():
                 ir_start_event.wait()
+                command = ir_queue.get()
 
-                (substring, number_part, direction) = ir_queue.get()
+                if command[0] == "FIN":
+                    break
+
+                (substring, number_part, direction) = command
                 print(f"substring is {substring}")
                 print(f"Taking a photo for obstacle no {number_part}")
                 print(f"Direction is {direction}")
                 # file_path = camera.take_pic()
+                bt_queue.put(("IR_CAPTURING",))
                 file_path = take_pic()
                 
                 predict_id = None
@@ -241,10 +251,11 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
                     print("predict id is None, changing to -1")
                     predict_id = "-1"
                     
-                bt_queue.put(("IR", number_part, predict_id, direction))
+                bt_queue.put(("IR_TARGET", number_part, predict_id, direction))
                 ir_start_event.clear()
-                bt_start_event.set()
+                # bt_start_event.set()
         #camera.close()
+        client.display_stitched()
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
 
@@ -265,10 +276,13 @@ def stmSendThread(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_sta
 def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event):
     while running_flag[0]:
         if not stm32_recv_queue.empty():
-            msg, associated_path = stm32_recv_queue.get(timeout=5)
+            msg, associated_path = stm32_recv_queue.get(timeout=3)
             start_time = time.time()
-            timeout = 3
+            timeout = 3   
             received_msg = None
+
+            if associated_path:
+                bt_queue.put(("STM32", msg, associated_path))
 
             while(True):
                 received_msg = STM.recv()
@@ -280,29 +294,25 @@ def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event,
                     print("Timeout waiting for R receive message")
                     break
                 else:
-                    time.sleep(0.1)
-    
-            if associated_path:
-                bt_queue.put(("STM32", msg, associated_path))
-                bt_start_event.set()
-            else:
-                algo_start_event.set()
+                    time.sleep(0.01)
+
+            algo_start_event.set()
 
 
 
 if __name__ == "__main__":
     # Queues for communication between threads
-    bt_queue = queue.Queue()
-    algo_queue = queue.Queue()
-    ir_queue = queue.Queue()
-    stm32_send_queue = queue.Queue()
-    stm32_recv_queue = queue.Queue()
+    bt_queue = Queue()
+    algo_queue = Queue()
+    ir_queue = Queue()
+    stm32_send_queue = Queue()
+    stm32_recv_queue = Queue()
 
     # At the beginning of your main section
-    bt_start_event = threading.Event() 
-    algo_start_event = threading.Event()  
-    ir_start_event = threading.Event() 
-    stm_start_event = threading.Event() 
+    bt_start_event = Event() 
+    algo_start_event = Event()  
+    ir_start_event = Event() 
+    stm_start_event = Event() 
 
     # Flag to control the execution of threads
     running_flag = [True]
@@ -314,11 +324,11 @@ if __name__ == "__main__":
 
     # Creating threads for each task
     threads = [
-        threading.Thread(target=startBTServer, args=(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event)),
-        threading.Thread(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
-        threading.Thread(target=startIRClient, args=(ir_queue, bt_queue, running_flag,  ir_start_event, bt_start_event, algo_start_event)),
-        threading.Thread(target=stmSendThread, args=(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_start_event)),
-        threading.Thread(target=stmRecvThread, args=(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event))
+        Process(target=startBTServer, args=(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event)),
+        Process(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
+        Process(target=startIRClient, args=(ir_queue, bt_queue, running_flag,  ir_start_event, bt_start_event, algo_start_event)),
+        Process(target=stmSendThread, args=(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_start_event)),
+        Process(target=stmRecvThread, args=(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event))
     ]
 
     # Starting threads
