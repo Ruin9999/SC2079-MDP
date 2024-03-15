@@ -5,12 +5,10 @@ from datetime import datetime
 import json
 from environment import Environment, Obstacle
 import os
-#from takepic import CameraManager
+from takepic import CameraManager
 from takepicV0 import take_pic
 from com_path_mapping import map_commands_to_paths
 
-from server_bt import BluetoothServer
-from client_algo import AlgorithmClient
 from http_client_ir import ImageRecognitionClient
 from STM32 import STM32Server
 
@@ -30,39 +28,27 @@ def startIRClient(ir_queue, running_flag, ir_start_event, cmd_start_event):
 
     if status_response and status_response.get('status') == 'OK':
         print("[CONNECTED] to IR Server\n")
-
-        # print("Initialize and Warming up Camera")
-
-        #camera = CameraManager()
-        #camera.warm_up()
-
         while running_flag[0]:
-            if not ir_queue.empty():
-                ir_start_event.wait()
+            ir_start_event.wait()
+            file_path = take_pic()
+            
+            predict_id = None
+            startTime = datetime.now()
+            response = client.send_file(file_path, "north")
+            endTime = datetime.now()
+            totalTime = (endTime - startTime).total_seconds()
+            print(f"Time taken for Receiving Image = {totalTime} s")
 
-                # (substring, number_part, direction) = ir_queue.get()
-                # print(f"substring is {substring}")
-                # print(f"Taking a photo for obstacle no {number_part}")
-                # print(f"Direction is {direction}")
-                # file_path = camera.take_pic()
-                file_path = take_pic()
-                
-                predict_id = None
-                startTime = datetime.now()
-                response = client.send_file(file_path, "north")
-                endTime = datetime.now()
-                totalTime = (endTime - startTime).total_seconds()
-                print(f"Time taken for Receiving Image = {totalTime} s")
-
-                if response is not None:  # Check if response is not None
-                    predict_id = response.get('predicted_id')
-                if not predict_id:
-                    print("predict id is None, changing to -1")
-                    predict_id = "-1"
-                
-                cmd_queue.put("IR", predict_id)
-                ir_start_event.clear()
-                cmd_start_event.set()
+            if response is not None:  # Check if response is not None
+                predict_id = response.get('predicted_id')
+            # predict_id = 39
+            if not predict_id:
+                print("predict id is None, changing to -1")
+                predict_id = "-1"
+            
+            cmd_queue.put("IR", predict_id)
+            ir_start_event.clear()
+            cmd_start_event.set()
         #camera.close()
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
@@ -101,11 +87,6 @@ def stmRecvThread(STM, stm32_recv_queue, running_flag, cmd_start_event):
                     time.sleep(0.1)
     
             cmd_start_event.set()
-            # if associated_path:
-            #     bt_queue.put(("STM32", msg, associated_path))
-            #     bt_start_event.set()
-            # else:
-            #     algo_start_event.set()
 
 def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm_start_event, ir_start_event):
 
@@ -141,8 +122,8 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
     
     for command in commands_list:
         cmd_start_event.wait()
-        cmd_start_event.clear()
         stm32_send_queue.put((command))
+        cmd_start_event.clear()
         stm_start_event.set()
 
     command = "US020"
@@ -167,24 +148,14 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
     
     print("Second obstacle's arrow: ", direction)
     if direction == "right":
-        commands_list = ["FR090", f"FW0{width_of_obstacle2 / 2 - 5}", "FL090", "FW010", "FL090"]
+        commands_list = ["FR090", "US020", "FL090", "FW010", "FL090", "US020", "FL090"]
     else:
-        commands_list = ["FR090", f"FW0{width_of_obstacle2 / 2 - 5}", "FL090", "FW010", "FL090"]
-
-    if width_of_obstacle2 + 20 < 100:
-        commands_list.append(f"FW0{width_of_obstacle2 + 20}")
-    else:
-        commands_list.append(f"FW{width_of_obstacle2 + 20}")
-
-    if direction == "right":
-        commands_list.append("FL090")
-    else:
-        commands_list.append("FR090")
+        commands_list = ["FL090", "US020", "FR090", "FW010", "FR090", "US020", "FR090"]
 
     for command in commands_list:
         cmd_start_event.wait()
-        cmd_start_event.clear()
         stm32_send_queue.put((command))
+        cmd_start_event.clear()
         stm_start_event.set()
 
     # Last stage: Go back to the carpark
@@ -193,16 +164,12 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
 
 if __name__ == "__main__":
     # Queues for communication between threads
-    bt_queue = queue.Queue()
-    algo_queue = queue.Queue()
     ir_queue = queue.Queue()
     stm32_send_queue = queue.Queue()
     stm32_recv_queue = queue.Queue()
     cmd_queue = queue.Queue()
 
     # At the beginning of your main section
-    bt_start_event = threading.Event() 
-    algo_start_event = threading.Event()  
     ir_start_event = threading.Event() 
     stm_start_event = threading.Event() 
     cmd_start_event = threading.Event()
@@ -218,8 +185,6 @@ if __name__ == "__main__":
     # Creating threads for each task
     threads = [
         threading.Thread(target=cmdGeneratorTemp, args={STM, 60, cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm_start_event, ir_start_event}),
-        # threading.Thread(target=startBTServer, args=(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event)),
-        # threading.Thread(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
         threading.Thread(target=startIRClient, args=(ir_queue, running_flag, ir_start_event, cmd_start_event)),
         threading.Thread(target=stmSendThread, args=(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_start_event, cmd_start_event)),
         threading.Thread(target=stmRecvThread, args=(STM, stm32_recv_queue, running_flag, cmd_start_event))
