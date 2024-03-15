@@ -425,6 +425,7 @@ export default function App(){
         <div className="grid">
             {grid.map((row, rowIndex) => (
               <div key={rowIndex} className="row">
+                <h3>{rowIndex < 10? 19 - rowIndex : (19 - rowIndex).toString().padStart(2, '0')}</h3>
                 {row.map((cell, colIndex) => (
                   <div
                     key={colIndex}
@@ -442,11 +443,23 @@ export default function App(){
                       backgroundColor: cell.color,
                     }}
                     onClick={() => handleCellClick(rowIndex, colIndex)}
-                    
-                  />
+                  >
+                    {/* {rowIndex === 19? colIndex: null} */}
+                  
+                  </div>
                 ))}
               </div>
             ))}
+            {/*Additional row for the axis */}
+            <div className="row">
+              <h3>XY</h3>
+              {Array.from({ length: grid[0].length }, (_, colIndex) => (
+                <div key={colIndex} className="cell">
+                  {colIndex}
+                </div>
+              ))}
+            </div>
+
         </div>
         
         <div className="controller-container">
@@ -454,7 +467,29 @@ export default function App(){
           {/* Path Paging */}
           {shortestPath.length > 0 && (
           <div className="flex flex-row items-center text-center bg-sky-200 p-4 my-8">
-          
+            {/* <button className="btn btn-circle pt-2 pl-1" 
+            disabled={page === 0}
+              onClick={() => {
+                setPage(page - 1);
+                setTriggerBack(true);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+                />
+              </svg>
+            </button> */}
+            
             <span className="mx-5 text-black">
               Step: {page + 1} / {shortestPath.length}
             </span>
@@ -464,6 +499,7 @@ export default function App(){
               disabled={page === shortestPath.length - 1}
               onClick={() => {
                 setPage(page + 1);
+                setTriggerBack(false);
               }}
             >
               <svg
@@ -483,9 +519,28 @@ export default function App(){
           </button>
         </div>
       )}
+
+          <div>
+            <table className="commandTable">
+              <th>
+                <td colspan="2">Commands</td>
+              </th>
+            {commands.map((item, index) => (
+              index % 2 === 0 ? (
+                <tr key={index}>
+                  <td>Step {index} : {item}</td>
+                  {/* Render next item if exists */}
+                  {commands[index + 1] && <td>Step {index + 1} : {commands[index+1]}</td>}
+                </tr>
+              ) : null
+            ))}
+            </table>
+          </div>
           <button className="runBtn" onClick={handleRunClick}>Run</button>
           <button className="resetBtn" onClick={reset}>Reset Grid</button>
           <br/>
+          {/* <div className="flex flex-col items-center text-center bg-sky-200 rounded-l"> */}
+          {/* <div className="card-body items-center text-center p-4"> */}
             <div className="form-control">
             <h3 className="subHeader-Robot">Robot Area</h3>
             <table>
@@ -525,15 +580,22 @@ export default function App(){
                   </select>
                 </td>
               </tr>
-            </table>  
+            </table>
+            {/* <label className="input-group input-group-horizontal"> */}   
               <button className="setBtn" onClick={createRobot}>Set</button>
+            {/* </label> */}
             </div>
+          {/* </div> */}
+          {/* </div> */}
           <br/>
 
           <h3 className="subHeader-Obstacle">Obstacles Created</h3>
           {obstacles.map((ob) => {
             return (
               <div key={ob}>
+                <table>
+                  <tr></tr>
+                </table>
                 <div flex flex-col>
                   <div>X: {ob.x}</div>
                   <div>Y: {ob.y}</div>
@@ -556,10 +618,6 @@ export default function App(){
           })}
         </div>
       </div>
-
-      
-
-      
 
       {/* <table className="border-collapse border-none border-black">
         <tbody>{createGrid()}</tbody>
