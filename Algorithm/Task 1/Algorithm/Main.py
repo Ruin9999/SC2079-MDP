@@ -67,17 +67,19 @@ def path_finding():
     # Adding additional commands for turning
     for command in commands:
         if command.startswith("FL"):
+            transformed_commands.append("FW003")
             transformed_commands.append("FL090")
-            transformed_commands.append("BW003")
         elif command.startswith("FR"):
+            transformed_commands.append("FW002")
             transformed_commands.append("FR090")
-            transformed_commands.append("BW003")
         elif command.startswith("BL"):
+            transformed_commands.append("FW003")
             transformed_commands.append("BL090")
-            transformed_commands.append("BW003")
+            transformed_commands.append("BW002")
         elif command.startswith("BR"):
+            transformed_commands.append("FW003")
             transformed_commands.append("BR090")
-            transformed_commands.append("BW003")
+            transformed_commands.append("BW002")
         else :
             transformed_commands.append(command)
             
