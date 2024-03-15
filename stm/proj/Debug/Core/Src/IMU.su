@@ -1,0 +1,10 @@
+../Core/Src/IMU.c:26:10:IMU_Initialise	64	static
+../Core/Src/IMU.c:189:19:IMU_WriteOneByte	40	static
+../Core/Src/IMU.c:195:19:IMU_ReadOneByte	40	static
+../Core/Src/IMU.c:201:19:IMU_TempRead	24	static
+../Core/Src/IMU.c:213:19:IMU_AccelRead	40	static
+../Core/Src/IMU.c:260:19:Gyro_calibrate	40	static
+../Core/Src/IMU.c:298:19:IMU_GyroRead	48	static
+../Core/Src/IMU.c:360:6:IMU_GyroResetTick	16	static
+../Core/Src/IMU.c:369:9:IMU_GyroReadHeading	64	static
+../Core/Src/IMU.c:549:6:Gyro_calibrateHeading	32	static
