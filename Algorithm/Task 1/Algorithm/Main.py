@@ -51,7 +51,7 @@ def path_finding():
             continue
         if command.startswith("FIN"):
             continue
-        if command[-1] != "2":
+        if command[-1] != "0":
             continue
         elif command.startswith("FW") or command.startswith("FS"):
             i += int(command[2:]) // 10
