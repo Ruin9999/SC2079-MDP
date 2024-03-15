@@ -28,34 +28,27 @@ def startIRClient(ir_queue, running_flag, ir_start_event, cmd_start_event):
 
     if status_response and status_response.get('status') == 'OK':
         print("[CONNECTED] to IR Server\n")
-
-        # print("Initialize and Warming up Camera")
-
-        #camera = CameraManager()
-        #camera.warm_up()
-
         while running_flag[0]:
-            if not ir_queue.empty():
-                ir_start_event.wait()
-                file_path = take_pic()
-                
-                predict_id = None
-                startTime = datetime.now()
-                response = client.send_file(file_path, "north")
-                endTime = datetime.now()
-                totalTime = (endTime - startTime).total_seconds()
-                print(f"Time taken for Receiving Image = {totalTime} s")
+            ir_start_event.wait()
+            file_path = take_pic()
+            
+            predict_id = None
+            startTime = datetime.now()
+            response = client.send_file(file_path, "north")
+            endTime = datetime.now()
+            totalTime = (endTime - startTime).total_seconds()
+            print(f"Time taken for Receiving Image = {totalTime} s")
 
-                if response is not None:  # Check if response is not None
-                    predict_id = response.get('predicted_id')
-                # predict_id = 39
-                if not predict_id:
-                    print("predict id is None, changing to -1")
-                    predict_id = "-1"
-                
-                cmd_queue.put("IR", predict_id)
-                ir_start_event.clear()
-                cmd_start_event.set()
+            if response is not None:  # Check if response is not None
+                predict_id = response.get('predicted_id')
+            # predict_id = 39
+            if not predict_id:
+                print("predict id is None, changing to -1")
+                predict_id = "-1"
+            
+            cmd_queue.put("IR", predict_id)
+            ir_start_event.clear()
+            cmd_start_event.set()
         #camera.close()
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
@@ -171,16 +164,12 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
 
 if __name__ == "__main__":
     # Queues for communication between threads
-    bt_queue = queue.Queue()
-    algo_queue = queue.Queue()
     ir_queue = queue.Queue()
     stm32_send_queue = queue.Queue()
     stm32_recv_queue = queue.Queue()
     cmd_queue = queue.Queue()
 
     # At the beginning of your main section
-    bt_start_event = threading.Event() 
-    algo_start_event = threading.Event()  
     ir_start_event = threading.Event() 
     stm_start_event = threading.Event() 
     cmd_start_event = threading.Event()
