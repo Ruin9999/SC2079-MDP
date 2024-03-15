@@ -5,6 +5,7 @@ class CommandGenerator:
     def generate(states, obstacles):
 
         def FLCommand() :
+            commands.append("Fw{}".format("002"))
             commands.append("FL{}".format("090"))
             commands.append("BW{}".format("002"))
 
@@ -20,7 +21,6 @@ class CommandGenerator:
         def BRCommand():
             commands.append("FW{}".format("002"))
             commands.append("BR{}".format("090"))
-            commands.append("BW{}".format("002"))
 
         """
         This function takes in a list of states and generates a list of commands for the robot to follow
@@ -273,6 +273,7 @@ class CommandGenerator:
 
         for i in range(1, len(commands)):
             # If both commands are BW
+            # if commands[i][-1] == "2": continue
             if commands[i].startswith("BW") and compressed_commands[-1].startswith("BW"):
                 # Get the number of steps of previous command
                 steps = int(compressed_commands[-1][2:])
