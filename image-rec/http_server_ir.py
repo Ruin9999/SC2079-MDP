@@ -11,7 +11,8 @@ app = Flask(__name__)
 
 
 
-UPLOAD_FOLDER = "C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\"
+#UPLOAD_FOLDER = "C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\"
+UPLOAD_FOLDER = "C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\images"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def process_file(file_path, direction, show_annotation_queue):
@@ -60,8 +61,8 @@ if __name__ == '__main__':
     process = Process(target=start_annotation_process, args=(show_annotation_queue,))
     process.start()
     
-    # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
     #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
     print()
     app.run(host=HOST, port=2030, debug=True)

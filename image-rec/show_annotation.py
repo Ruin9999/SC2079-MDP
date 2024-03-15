@@ -11,7 +11,9 @@ from datetime import datetime
 
 def start_annotation_process(queue):
     image_count = 0
-    file_dir = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\"
+    #file_dir = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\"
+    file_dir = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images"
+
     archive_directory_content(file_dir)
 
     while True:
@@ -32,7 +34,8 @@ def archive_directory_content(directory_path):
     # Moves files with the specified extension from the given directory to an archive directory,
     # except for files named .gitkeep.
 
-    archive_dir="C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_archive"
+    #archive_dir="C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_archive"
+    archive_dir="C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_archive"
     file_extension=".jpg"
     os.makedirs(archive_dir, exist_ok=True)  # Create the archive directory if it doesn't exist
     
@@ -69,8 +72,8 @@ def show_annotation(image, results, image_count):
 
     # Save the annotated image with a unique name
     file_name = f"annotated_image{image_count}.jpg"
-    file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\{file_name}"
-
+    #file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\{file_name}"
+    file_path = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images\\{file_name}"
     cv2.imwrite(file_path, annotated_image)
     print(f"Image saved as {file_path}")
 
