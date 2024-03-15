@@ -42,13 +42,13 @@ class Obstacle(Cell):
                 cells.append(Cell(
                     self.x, self.y + 2 + Constants.EXPANDED_CELL * 2, Direction.SOUTH, self.obstacle_id, 0))
             # Or (x + 1, y + 4)
-            if is_valid_coord(self.x + 1, self.y + 2 + Constants.EXPANDED_CELL * 2):
+            """ if is_valid_coord(self.x + 1, self.y + 2 + Constants.EXPANDED_CELL * 2):
                 cells.append(Cell(self.x + 1, self.y + 2 + Constants.EXPANDED_CELL *
                                 2, Direction.SOUTH, self.obstacle_id, Constants.SCREENSHOT_COST))
             # Or (x - 1, y + 4)
             if is_valid_coord(self.x - 1, self.y + 2 + Constants.EXPANDED_CELL * 2):
                 cells.append(Cell(self.x - 1, self.y + 2 + Constants.EXPANDED_CELL *
-                                2, Direction.SOUTH, self.obstacle_id, Constants.SCREENSHOT_COST))
+                                2, Direction.SOUTH, self.obstacle_id, Constants.SCREENSHOT_COST)) """
 
         # If obstacle is facing south, then robot's cell state must be facing north
         elif self.direction == Direction.SOUTH:
@@ -63,13 +63,13 @@ class Obstacle(Cell):
                     self.x, self.y - 2 - Constants.EXPANDED_CELL * 2, Direction.NORTH, self.obstacle_id, 0))
 
             # Or (x + 1, y - 4)
-            if is_valid_coord(self.x + 1, self.y - 2 - Constants.EXPANDED_CELL * 2):
+            """ if is_valid_coord(self.x + 1, self.y - 2 - Constants.EXPANDED_CELL * 2):
                 cells.append(Cell(self.x + 1, self.y - 2 - Constants.EXPANDED_CELL *
                                 2, Direction.NORTH, self.obstacle_id, Constants.SCREENSHOT_COST))
             # Or (x - 1, y - 4)
             if is_valid_coord(self.x - 1, self.y - 2 - Constants.EXPANDED_CELL * 2):
                 cells.append(Cell(self.x - 1, self.y - 2 - Constants.EXPANDED_CELL *
-                                2, Direction.NORTH, self.obstacle_id, Constants.SCREENSHOT_COST))
+                                2, Direction.NORTH, self.obstacle_id, Constants.SCREENSHOT_COST)) """
 
         # If obstacle is facing east, then robot's cell state must be facing west
         elif self.direction == Direction.EAST:
@@ -84,13 +84,13 @@ class Obstacle(Cell):
                 cells.append(Cell(self.x + 2 + Constants.EXPANDED_CELL * 2,
                                 self.y, Direction.WEST, self.obstacle_id, 0))
             # Or (x + 4, y + 1)
-            if is_valid_coord(self.x + 2 + Constants.EXPANDED_CELL * 2, self.y + 1):
+            """ if is_valid_coord(self.x + 2 + Constants.EXPANDED_CELL * 2, self.y + 1):
                 cells.append(Cell(self.x + 2 + Constants.EXPANDED_CELL * 2, self.y +
                                 1, Direction.WEST, self.obstacle_id, Constants.SCREENSHOT_COST))
             # Or (x + 4, y - 1)
             if is_valid_coord(self.x + 2 + Constants.EXPANDED_CELL * 2, self.y - 1):
                 cells.append(Cell(self.x + 2 + Constants.EXPANDED_CELL * 2, self.y -
-                                1, Direction.WEST, self.obstacle_id, Constants.SCREENSHOT_COST))
+                                1, Direction.WEST, self.obstacle_id, Constants.SCREENSHOT_COST)) """
 
         # If obstacle is facing west, then robot's cell state must be facing east
         elif self.direction == Direction.WEST:
@@ -107,12 +107,12 @@ class Obstacle(Cell):
                 cells.append(Cell(self.x - 2 - Constants.EXPANDED_CELL * 2,
                                 self.y, Direction.EAST, self.obstacle_id, 0))
             # Or (x - 4, y + 1)
-            if is_valid_coord(self.x - 2 - Constants.EXPANDED_CELL * 2, self.y + 1):
+            """ if is_valid_coord(self.x - 2 - Constants.EXPANDED_CELL * 2, self.y + 1):
                 cells.append(Cell(self.x - 2 - Constants.EXPANDED_CELL * 2, self.y +
                                 1, Direction.EAST, self.obstacle_id, Constants.SCREENSHOT_COST))
             # Or (x - 4, y - 1)
             if is_valid_coord(self.x - 2 - Constants.EXPANDED_CELL * 2, self.y - 1):
                 cells.append(Cell(self.x - 2 - Constants.EXPANDED_CELL * 2, self.y -
-                                1, Direction.EAST, self.obstacle_id, Constants.SCREENSHOT_COST))
+                                1, Direction.EAST, self.obstacle_id, Constants.SCREENSHOT_COST)) """
 
         return cells
