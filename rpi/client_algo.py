@@ -23,7 +23,8 @@ class AlgorithmClient:
             return None
 
 if __name__ == "__main__":
-    base_url = 'http://192.168.16.11:2040'  # The base URL where your Flask app is running
+    #base_url = 'http://192.168.16.11:2040'  # The base URL where your Flask app is running
+    base_url = 'http://192.168.16.22:2040'  # The base URL where your Flask app is running
     client = AlgorithmClient(base_url)
     
     # Check server status
