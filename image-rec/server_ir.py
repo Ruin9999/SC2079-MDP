@@ -8,8 +8,8 @@ from multiprocessing import Process, Queue
 # Change to your laptop host ip when connected to RPI Wifi
 # use ipconfig to find your laptop host ip 
 #HOST = '192.168.151.23' #Aaron Laptop (NTUSECURE)
-# HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+#HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
 #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
 
 PORT = 2030 
@@ -53,8 +53,8 @@ def receive_file(conn):
             data.extend(packet)
 
         # file_path = f"images\{file_name}"
-        file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\{file_name}"
-
+        #file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\{file_name}"
+        file_path = "C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\images\\{file_name}"
         # Save the file data to a file with the received name
         with open(file_path, 'wb') as file:
             file.write(data)

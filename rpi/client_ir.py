@@ -58,7 +58,8 @@ class ImageRecognitionClient:
                 if not chunk:  # If chunk is empty, this means the connection is closed or there's no more data
                     break  # Exit the loop
                 response += chunk  # Append the chunk to the accumulated response data
-            predict_id = response.decode('utf-8')
+            #predict_id = response.decode('utf-8')
+            predict_id = response
             print(f"Predicted ID: {predict_id}")
             self.disconnect()  # Ensure the socket is properly closed before retrying
             self.connect()  # Re-establish the connection
