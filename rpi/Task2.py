@@ -88,10 +88,10 @@ def stmRecvThread(STM, stm32_recv_queue, running_flag, cmd_start_event):
     
             cmd_start_event.set()
 
-def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm_start_event, ir_start_event):
+def cmdGeneratorTemp(cmd_queue, ir_queue, stm32_send_queue, cmd_start_event, stm_start_event, ir_start_event):
 
     # First stage: go forward and recognize first obstacle 
-    command = "US020"
+    command = "US030"
     stm32_send_queue.put(command)
     cmd_start_event.clear()
     stm_start_event.set()
@@ -116,9 +116,9 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
     # Second stage: turn and go to second obstacle
     commands_list = []
     if direction == "right":
-        commands_list = ["FR090", "FL090", "FW010", "FL090", "FR090"]
+        commands_list = ["FR090", "FL090", "FW030", "FL090", "FR090"]
     else:
-        commands_list = ["FL090", "FR090", "FW010", "FR090", "FL090"]
+        commands_list = ["FL090", "FR090", "FW030", "FR090", "FL090"]
     
     for command in commands_list:
         cmd_start_event.wait()
@@ -126,7 +126,7 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
         cmd_start_event.clear()
         stm_start_event.set()
 
-    command = "US020"
+    command = "US030"
     stm32_send_queue.put(command)
     cmd_start_event.clear()
     stm_start_event.set()
@@ -148,9 +148,9 @@ def cmdGeneratorTemp(distance_1, distance_2, width_of_obstacle2, cmd_queue, ir_q
     
     print("Second obstacle's arrow: ", direction)
     if direction == "right":
-        commands_list = ["FR090", "US020", "FL090", "FW010", "FL090", "US020", "FL090"]
+        commands_list = ["FR090", "US050", "FL090", "FW030", "FL090", "US050", "FL090"]
     else:
-        commands_list = ["FL090", "US020", "FR090", "FW010", "FR090", "US020", "FR090"]
+        commands_list = ["FL090", "US050", "FR090", "FW030", "FR090", "US050", "FR090"]
 
     for command in commands_list:
         cmd_start_event.wait()
