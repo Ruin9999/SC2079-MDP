@@ -271,7 +271,7 @@ def stmSendThread(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_sta
             STM.send(msg)
             stm32_recv_queue.put((msg, associated_path))
             stm_start_event.clear()
-            time.sleep(0.1)
+            time.sleep(0.03)
 
 
 def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event):
@@ -290,12 +290,14 @@ def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event,
                 # print(f"Received from stm: {received_msg}")
                 if received_msg == "R":
                     print(f"Received R from stm: {received_msg}")
-                    break
+                elif received_msg == "C":
+                    print(f"Received C from stm: {received_msg}")
+                    break;
                 elif (time.time()-start_time>timeout):
                     print("Timeout waiting for R receive message")
                     break
                 else:
-                    time.sleep(0.01)
+                    time.sleep(0.03)
 
             algo_start_event.set()
 

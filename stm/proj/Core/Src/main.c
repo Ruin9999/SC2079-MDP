@@ -1255,6 +1255,10 @@ void LeftMotor(void *argument)
         Buffer[3] = 'd';
         Buffer[4] = 'd';
         HAL_UART_Transmit(&huart3, "R", sizeof("R"), HAL_MAX_DELAY);
+
+        while(HAL_TIM_Base_GetState(&htim8) == HAL_TIM_STATE_BUSY);
+
+        HAL_UART_Transmit(&huart3, "C", sizeof("C"), HAL_MAX_DELAY);
     }
     /* USER CODE END LeftMotor */
 }
