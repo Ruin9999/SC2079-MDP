@@ -1,8 +1,15 @@
 import cv2
 import os
+import importlib.util
 from dotenv import load_dotenv
 from inference import get_roboflow_model
 import supervision as sv
+
+config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'rpi', 'config'))
+config_path = os.path.join(config_dir, 'PC_CONFIG.py')
+spec = importlib.util.spec_from_file_location("PC_CONFIG", config_path)
+PC_CONFIG = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(PC_CONFIG)
 
 class Predictor:
     def __init__(self):
@@ -64,6 +71,6 @@ if __name__ == "__main__":
     # Example usage
     predictor = Predictor()
     # Specify the path to your image
-    image_file_path = r"C:\Users\CY\Documents\NTU Year 3 Sem 2\SC2079 - MDP\Repo\image-rec\images\image_test2.jpg"
+    image_file_path = PC_CONFIG.FILE_DIRECTORY + "image-rec\\sample_images\\image_2024-02-29_18-27-32.jpg"
     # Predict and display the class name
     predictor.predict_id(image_file_path)

@@ -6,7 +6,7 @@ import requests
 import json
 from environment import Environment, Obstacle
 import os
-from takepic import take_pic
+from rpi_archive.takepic import take_pic
 from com_path_mapping import map_commands_to_paths
 
 from server_bt import BluetoothServer

@@ -8,7 +8,7 @@ from environment import Environment, Obstacle
 import os
 from com_path_mapping import map_commands_to_paths
 from server_bt import BluetoothServer
-from client_ir import ImageRecognitionClient
+from rpi_archive.client_ir import ImageRecognitionClient
 
 def ir_server(ir_queue, stm32_send_queue, ir_start_event, stm_start_event, shutdown_event):
 

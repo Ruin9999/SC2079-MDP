@@ -4,6 +4,8 @@ from CommandGenerator import CommandGenerator
 from Navigator import Navigator
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
+import importlib.util
 
 app = Flask(__name__)
 CORS(app)
@@ -95,7 +97,16 @@ def path_finding():
 
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', port=5000, debug=True)
-    app.run(host='192.168.16.22', port=2040, debug=True)
-    #app.run(host='192.168.16.11', port=2040, debug=True)
-    #app.run(host='192.168.80.27', port=2040, debug=True)
+    
+    try:
+        # Construct the path to PC_CONFIG.py and import module
+        config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'rpi', 'config'))
+        config_path = os.path.join(config_dir, 'PC_CONFIG.py')
+        spec = importlib.util.spec_from_file_location("PC_CONFIG", config_path)
+        PC_CONFIG = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(PC_CONFIG)
+
+        app.run(host=PC_CONFIG.HOST, port=PC_CONFIG.ALGO_PORT, debug=True)
+    except:
+        print('Unable to Connect to PC_CONFIG Host and Port. Switching to 0.0.0.0:5000.')
+        app.run(host='0.0.0.0', port=5000, debug=True)

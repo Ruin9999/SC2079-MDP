@@ -2,6 +2,7 @@ import cv2
 import supervision as sv
 import time
 import os
+import importlib.util
 from id_mapping import mapping
 from multiprocessing import Process, Queue
 from predict import Predictor
@@ -9,10 +10,17 @@ from show_stitched import showAnnotatedStitched
 import shutil
 from datetime import datetime
 
+
+config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'rpi', 'config'))
+config_path = os.path.join(config_dir, 'PC_CONFIG.py')
+spec = importlib.util.spec_from_file_location("PC_CONFIG", config_path)
+PC_CONFIG = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(PC_CONFIG)
+
+
 def start_annotation_process(queue):
     image_count = 0
-    file_dir = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\"
-    # file_dir = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images"
+    file_dir =  PC_CONFIG.FILE_DIRECTORY + "image-rec\\annotated_images\\"
 
     archive_directory_content(file_dir)
 
@@ -34,8 +42,7 @@ def archive_directory_content(directory_path):
     # Moves files with the specified extension from the given directory to an archive directory,
     # except for files named .gitkeep.
 
-    archive_dir="C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_archive"
-    # archive_dir="C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_archive"
+    archive_dir= PC_CONFIG.FILE_DIRECTORY + "image-rec\\annotated_archive"
     file_extension=".jpg"
     os.makedirs(archive_dir, exist_ok=True)  # Create the archive directory if it doesn't exist
     
@@ -83,8 +90,8 @@ def show_annotation(image, results, detection_id, image_count):
 
     # Save the annotated image with a unique name
     file_name = f"annotated_image{image_count}.jpg"
-    file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\{file_name}"
-    # file_path = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images\\{file_name}"
+    file_path = PC_CONFIG.FILE_DIRECTORY + f"image-rec\\annotated_images\\{file_name}"
+
     cv2.imwrite(file_path, annotated_image)
     print(f"Image saved as {file_path}")
 
@@ -102,7 +109,7 @@ def show_annotation(image, results, detection_id, image_count):
 
 
 if __name__ == '__main__':
-    image_folder_path = r"C:\Users\CY\Documents\NTU Year 3 Sem 2\SC2079 - MDP\Repo\image-rec\sample_images"
+    image_folder_path = PC_CONFIG.FILE_DIRECTORY + "image-rec\\sample_images"
     show_annotation_queue = Queue()
     process = Process(target=start_annotation_process, args=(show_annotation_queue,))
     process.start()

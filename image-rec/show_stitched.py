@@ -3,12 +3,18 @@ matplotlib.use('TkAgg')  # Use the TkAgg backend
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
+import importlib.util
 import math
 from datetime import datetime
 
+config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'rpi', 'config'))
+config_path = os.path.join(config_dir, 'PC_CONFIG.py')
+spec = importlib.util.spec_from_file_location("PC_CONFIG", config_path)
+PC_CONFIG = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(PC_CONFIG)
+
 def showAnnotatedStitched():
-    image_dir = r"C:\Users\CY\Documents\NTU Year 3 Sem 2\SC2079 - MDP\Repo\image-rec\annotated_images"
-    # image_dir = r"C:\Users\draco\Desktop\github\SC2079-MDP\image-rec\annotated_images"
+    image_dir = PC_CONFIG.FILE_DIRECTORY + "image-rec\\annotated_images"
     image_files = [os.path.join(image_dir, filename) for filename in os.listdir(image_dir) if filename.endswith(".jpg")]
     
     # Adjust the layout to 2 by 4
@@ -37,8 +43,7 @@ def showAnnotatedStitched():
     plt.subplots_adjust(wspace=0, hspace=0)
     plt.tight_layout(pad=0, h_pad=0, w_pad=0)
 
-    stitched_image_dir = r"C:\Users\CY\Documents\NTU Year 3 Sem 2\SC2079 - MDP\Repo\image-rec\stitched_images"
-    # stitched_image_dir = r"C:\Users\draco\Desktop\github\SC2079-MDP\image-rec\stitched_images"
+    stitched_image_dir = PC_CONFIG.FILE_DIRECTORY + "image-rec\\stitched_images"
     stitched_file_name = generate_filename_with_timestamp()
     save_path = os.path.join(stitched_image_dir, stitched_file_name)
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0)

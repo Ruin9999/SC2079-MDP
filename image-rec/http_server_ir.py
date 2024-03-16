@@ -1,18 +1,23 @@
 from flask import Flask, request, jsonify
 import os
+import importlib.util
 from datetime import datetime
 from predict import Predictor
 from id_mapping import mapping
 from show_annotation import start_annotation_process
 from multiprocessing import Process, Queue
-from show_stitched import showAnnotatedStitched
 
 app = Flask(__name__)
 
+config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'rpi', 'config'))
+config_path = os.path.join(config_dir, 'PC_CONFIG.py')
+spec = importlib.util.spec_from_file_location("PC_CONFIG", config_path)
+PC_CONFIG = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(PC_CONFIG)
 
-
-UPLOAD_FOLDER = "C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\"
-# UPLOAD_FOLDER = "C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\images"
+HOST = PC_CONFIG.HOST
+PORT = PC_CONFIG.IMAGE_REC_PORT
+UPLOAD_FOLDER =  PC_CONFIG.FILE_DIRECTORY + "image-rec\\images\\"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def process_file(file_path, direction, show_annotation_queue):
@@ -61,12 +66,12 @@ if __name__ == '__main__':
     process = Process(target=start_annotation_process, args=(show_annotation_queue,))
     process.start()
     
-    # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
-    # app.run(host='0.0.0.0', port=4000, debug=True)
     print()
-
-    app.run(host=HOST, port=2030, debug=True)
-    
+    print(f"UPLOAD FOLDER: {UPLOAD_FOLDER}")
+    try:
+        app.run(host=HOST, port=PORT, debug=True)
+    except:
+        print('Unable to Connect to PC_CONFIG Host and Port. Switching to 0.0.0.0:4000.')
+        app.run(host='0.0.0.0', port=4000, debug=True)
+     
     process.join()
