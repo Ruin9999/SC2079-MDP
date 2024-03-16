@@ -13,6 +13,7 @@ from server_bt import BluetoothServer
 from client_algo import AlgorithmClient
 from http_client_ir import ImageRecognitionClient
 from STM32 import STM32Server
+from config import PC_CONFIG
 
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
@@ -125,13 +126,8 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
 
 def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event):
 
-    # Change to your laptop host ip when connected to RPI Wifi
-    # use ipconfig to find your laptop host ip 
-    #HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
-
-    PORT = 2040
+    HOST = PC_CONFIG.HOST 
+    PORT = PC_CONFIG.ALGO_PORT
     base_url = f"http://{HOST}:{PORT}"
     client = AlgorithmClient(base_url)
 
@@ -204,12 +200,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
 
 
 def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_event, algo_start_event):
-    # Change to your laptop host ip when connected to RPI Wifi
-    # use ipconfig to find your laptop host ip 
-    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-    #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
-    PORT = 2030
+    HOST = PC_CONFIG.HOST
+    PORT = PC_CONFIG.IMAGE_REC_PORT
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
     print("Testing Connection to IR Server...")
     # Test - Check server status

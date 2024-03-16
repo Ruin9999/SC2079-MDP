@@ -1,4 +1,5 @@
 import requests
+from config import PC_CONFIG
 
 class ImageRecognitionClient:
     def __init__(self, host, port):
@@ -39,7 +40,7 @@ class ImageRecognitionClient:
             return None   
 
 if __name__ == "__main__":
-    host = '192.168.80.27'  # Adjust the IP as needed
-    port = 2030  # Adjust the port as needed
+    host = PC_CONFIG.HOST
+    port = PC_CONFIG.IMAGE_REC_PORT
     client = ImageRecognitionClient(host, port)
     client.send_file('/path/to/your/image.jpg', 'north')  # Adjust the file path and direction as needed

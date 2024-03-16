@@ -9,7 +9,7 @@ def is_valid_command(command):
     Check if the command matches the required format.
     The format is one of FW, BW, FL, FR, BL, BR followed by three digits.
     """
-    pattern = r"^(FW|BW|FL|FR|BL|BR)\d{3}$"
+    pattern = r"^(FW|BW|FL|FR|BL|BR|US)\d{3}$"
     return re.match(pattern, command) is not None
 
 if __name__ == "__main__":
@@ -30,5 +30,6 @@ if __name__ == "__main__":
             print(f"Received 'R' from STM: {received_msg}")
             time.sleep(0.5)
             break
+
 
     STM.disconnect()

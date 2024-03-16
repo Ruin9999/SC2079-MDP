@@ -45,25 +45,64 @@ class STM32Server:
         except serial.SerialException as e:
             print(f"[Error] Failed to send to STM: {e}")
 
+    def send_command_list(self, commands):
+        for command in commands:
+            self.send(command)
+            print(f"Sent to STM: {command}")
+            start_time = time.time()
+            timeout = 3
+            while True:
+                received_msg = self.recv()
+                if received_msg == "R":
+                    print(f"Received 'R' from STM: {received_msg}")
+                    time.sleep(0.1)
+                    break
+                elif (time.time()-start_time>timeout):
+                    print("Timeout waiting for R receive message")
+                    break
+                else:
+                    time.sleep(0.1)
+
+
 if __name__ == "__main__":
     STM = STM32Server()
     STM.connect()
 
     # commands = ["FW020", "FW010", "FW030", "BW010", "BW010", "BW010", "FW010", "FW010", "FW010"]
     # commands = ["FL090", "BW010"]
-    commands = ["FW020",
-                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
-                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
-                "FL090", "FW010", "FR090", "BW025", "FR090", "BW020"]
+    # commands = ["FW020",
+    #             "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
+    #             "FL090", "FW010", "FR090", "BW025", "FR090", "BW020",
+    #             "FL090", "FW010", "FR090", "BW025", "FR090", "BW020"]
 
-    for command in commands:
-        STM.send(command)
-        print(f"Sent to STM: {command}")
-        while True:
-            received_msg = STM.recv()
-            if received_msg == "R":
-                print(f"Received 'R' from STM: {received_msg}")
-                time.sleep(0.5)
-                break
+    #  US060
+    ## SNAP_1
+    # commands = ["US055"]
+    commands = ["FW090"]
+    STM.send_command_list(commands)
+    print("SNAP1")
 
+    direction = "L"
+
+    # # First Obstacle L
+    if direction == "L":
+        commands = ["FL045", "FR045", "FR090", "FW030", "FL045", "FR045", "FR090", "FL090"]
+        # commands = ["FL060", "FR060", "FW035", "FR060", "FL060"]
+    # First Obstacle R
+    elif direction == "R":
+        commands = ["FR060", "FL060", "FW035", "FL060", "FR060"]
+    else:
+        print("Image Rec for Image 1 Failed")
+
+    STM.send_command_list(commands)
+
+    #  US030
+    ## SNAP_2
+    # commands = ["US030", "FL090"]
+    # STM.send_command_list(commands)
+    # print("SNAP2")   
+
+
+     # Second Obstacle L
+     # Second Obstacle R
     STM.disconnect()

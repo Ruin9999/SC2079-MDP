@@ -9,16 +9,13 @@ import os
 from com_path_mapping import map_commands_to_paths
 from server_bt import BluetoothServer
 from rpi_archive.client_ir import ImageRecognitionClient
+from config import PC_CONFIG
 
 def ir_server(ir_queue, stm32_send_queue, ir_start_event, stm_start_event, shutdown_event):
 
     try:
-        # Change to your laptop host ip when connected to RPI Wifi
-        # use ipconfig to find your laptop host ip 
-        HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-        # HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
-        #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
-        PORT = 2030
+        HOST = PC_CONFIG.HOST
+        PORT = PC_CONFIG.IMAGE_REC_PORT
         client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
         print("Connecting to Image Rec Server")
         client.connect()
