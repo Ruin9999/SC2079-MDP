@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 from takepicV0 import take_pic
-from com_path_mapping import map_commands_to_paths
+from com_path_mappingV2 import map_commands_to_paths
 
 from server_bt import BluetoothServer
 from client_algo import AlgorithmClient
@@ -67,19 +67,19 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                             print(f"STM32 optional parts: msg = {msg}, x = {x}, y = {y}, d = {d}")
                             print(f"sending status to android: STATUS/Moving")
                             bt_server.send_data("STATUS/Moving")
-                            time.sleep(0.4)
+                            time.sleep(0.1)
                             
                             msg_to_android = f"ROBOT/{x}/{y}/{d}"
                             print(f"sending robot to android: {msg_to_android}")
                             bt_server.send_data(msg_to_android)
-                            time.sleep(0.2)
+                            time.sleep(0.1)
 
                 
                 elif command == "IR_CAPTURING":
                     print(f"IR_CAPTURING msg")
                     print(f"sending status to android: STATUS/Capturing")
                     bt_server.send_data("STATUS/Capturing")
-                    time.sleep(0.2)
+                    time.sleep(0.1)
 
 
                 elif command == "IR_TARGET":
@@ -92,7 +92,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
-                        time.sleep(0.2)
+                        time.sleep(0.1)
 
 
                 elif command == "FIN":
@@ -100,7 +100,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                     msg_to_android = f"FINISH/EXPLORE"
                     print(f"sending {msg_to_android} to android")
                     bt_server.send_data(msg_to_android)
-                    time.sleep(0.3)
+                    time.sleep(0.1)
                     break
                 else:
                     # Handle other commands or continue loop
@@ -184,6 +184,8 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
 
                                 elif command.startswith(mov_tup):
                                     stm32_send_queue.put((command, associated_path))
+                                    if associated_path:
+                                        bt_queue.put(("STM32", command, associated_path))
                                     algo_start_event.clear()
                                     stm_start_event.set()
 
@@ -265,9 +267,6 @@ def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event,
             start_time = time.time()
             timeout = 3   
             received_msg = None
-
-            if associated_path:
-                bt_queue.put(("STM32", msg, associated_path))
 
             while(True):
                 received_msg = STM.recv()
