@@ -11,8 +11,8 @@ from datetime import datetime
 
 def start_annotation_process(queue):
     image_count = 0
-    #file_dir = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\"
-    file_dir = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images"
+    file_dir = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\"
+    # file_dir = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images"
 
     archive_directory_content(file_dir)
 
@@ -23,10 +23,10 @@ def start_annotation_process(queue):
             if item[0] == "STOP":  # Check for the termination signal
                 print("Stopping annotation process.")
                 break  # Exit the loop to end the process
-            image_file_path, results = item
+            image_file_path, results, detection_id = item
             image = cv2.imread(image_file_path)
             image_count += 1
-            show_annotation(image, results, image_count)
+            show_annotation(image, results, detection_id, image_count)
 
     showAnnotatedStitched()
 
@@ -34,8 +34,8 @@ def archive_directory_content(directory_path):
     # Moves files with the specified extension from the given directory to an archive directory,
     # except for files named .gitkeep.
 
-    #archive_dir="C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_archive"
-    archive_dir="C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_archive"
+    archive_dir="C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_archive"
+    # archive_dir="C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_archive"
     file_extension=".jpg"
     os.makedirs(archive_dir, exist_ok=True)  # Create the archive directory if it doesn't exist
     
@@ -48,10 +48,21 @@ def archive_directory_content(directory_path):
             shutil.move(src_path, dest_path)
             print(f"Moved and renamed: {src_path} to {dest_path}")
 
-def show_annotation(image, results, image_count):
+def show_annotation(image, results, detection_id, image_count):
+    print(f"results[0]: {results[0]}")
+    predictions = results[0].predictions
+    filtered_predictions = [pred for pred in predictions if pred.detection_id == detection_id]
+    
+    if not filtered_predictions:
+        print("No matching detection_id found.")
+        return
+    
+    # Update the predictions list with only the filtered predictions
+    results[0].predictions = filtered_predictions
     # Load the results into the supervision Detections API
     detections = sv.Detections.from_inference(results[0].dict(by_alias=True, exclude_none=True))
-
+    print(f"detections : {detections}")
+    
     class_name = "None"
     annotated_image= image
 
@@ -72,8 +83,8 @@ def show_annotation(image, results, image_count):
 
     # Save the annotated image with a unique name
     file_name = f"annotated_image{image_count}.jpg"
-    #file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\{file_name}"
-    file_path = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images\\{file_name}"
+    file_path = f"C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\annotated_images\\{file_name}"
+    # file_path = f"C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\annotated_images\\{file_name}"
     cv2.imwrite(file_path, annotated_image)
     print(f"Image saved as {file_path}")
 
@@ -102,10 +113,10 @@ if __name__ == '__main__':
     file_path_list = [os.path.join(image_folder_path, f) for f in os.listdir(image_folder_path) if f.endswith('.jpg')]
 
     for file_path in file_path_list:
-        class_name, results = predictor.predict_id(file_path)  # Perform prediction
+        class_name, results, detection_id = predictor.predict_id(file_path)  # Perform prediction
 
         print(f"result: {results}")
-        show_annotation_queue.put((file_path, results))
+        show_annotation_queue.put((file_path, results, detection_id))
 
     # Send the termination signal to the process
     show_annotation_queue.put("STOP")

@@ -34,13 +34,14 @@ class Predictor:
                 if largest_size == -1 or max(prediction.width, prediction.height) > largest_size:
                     largest_size = max(prediction.width, prediction.height)
                     class_name = prediction.class_name
+                    detection_id = prediction.detection_id
 
         if class_name:
             print("class_name = " + class_name)
         else:
             print("class_name = None")
 
-        return class_name, results
+        return class_name, results, detection_id
 
     # def show_annotation(self, image, results):
     #     # Load the results into the supervision Detections API
@@ -63,6 +64,6 @@ if __name__ == "__main__":
     # Example usage
     predictor = Predictor()
     # Specify the path to your image
-    image_file_path = "images/image_test2.jpg"
+    image_file_path = r"C:\Users\CY\Documents\NTU Year 3 Sem 2\SC2079 - MDP\Repo\image-rec\images\image_test2.jpg"
     # Predict and display the class name
     predictor.predict_id(image_file_path)

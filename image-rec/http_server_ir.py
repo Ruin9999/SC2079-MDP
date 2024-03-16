@@ -11,8 +11,8 @@ app = Flask(__name__)
 
 
 
-#UPLOAD_FOLDER = "C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\"
-UPLOAD_FOLDER = "C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\images"
+UPLOAD_FOLDER = "C:\\Users\\CY\\Documents\\NTU Year 3 Sem 2\\SC2079 - MDP\\Repo\\image-rec\\images\\"
+# UPLOAD_FOLDER = "C:\\Users\\draco\\Desktop\\github\\SC2079-MDP\\image-rec\\images"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def process_file(file_path, direction, show_annotation_queue):
@@ -21,8 +21,8 @@ def process_file(file_path, direction, show_annotation_queue):
     print(f"Direction received: {direction}")
 
     startTime = datetime.now()
-    class_name, results = predictor.predict_id(file_path)  # Perform prediction
-    show_annotation_queue.put((file_path, results))
+    class_name, results, detection_id = predictor.predict_id(file_path)  # Perform prediction
+    show_annotation_queue.put((file_path, results, detection_id))
     class_id = str(mapping.get(class_name, -1))
     endTime = datetime.now()
     totalTime = (endTime - startTime).total_seconds()
@@ -61,10 +61,12 @@ if __name__ == '__main__':
     process = Process(target=start_annotation_process, args=(show_annotation_queue,))
     process.start()
     
-    HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
-    #HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
+    # HOST = '192.168.16.22' #Aaron Laptop (MDPGrp16)
+    HOST = '192.168.16.11' #Cy Laptop (MDPGrp16)
     #HOST = '192.168.80.27'  #Cy Laptop (RPICy)
+    # app.run(host='0.0.0.0', port=4000, debug=True)
     print()
+
     app.run(host=HOST, port=2030, debug=True)
     
     process.join()
