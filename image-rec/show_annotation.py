@@ -31,6 +31,7 @@ def start_annotation_process(queue):
             if item[0] == "STOP":  # Check for the termination signal
                 print("Stopping annotation process.")
                 break  # Exit the loop to end the process
+            print(f"item: {item}")
             image_file_path, results, detection_id = item
             image = cv2.imread(image_file_path)
             image_count += 1
@@ -62,7 +63,6 @@ def show_annotation(image, results, detection_id, image_count):
     
     if not filtered_predictions:
         print("No matching detection_id found.")
-        return
     
     # Update the predictions list with only the filtered predictions
     results[0].predictions = filtered_predictions
@@ -126,9 +126,7 @@ if __name__ == '__main__':
         show_annotation_queue.put((file_path, results, detection_id))
 
     # Send the termination signal to the process
-    show_annotation_queue.put("STOP")
+    show_annotation_queue.put(("STOP",))
 
     # Wait for the process to finish
     process.join()
-
-    showAnnotatedStitched()

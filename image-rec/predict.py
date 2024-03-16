@@ -34,7 +34,7 @@ class Predictor:
         # self.show_annotation(image, results)
 
         # Extract class name
-        class_name, largest_size = None, -1
+        class_name, largest_size, detection_id = None, -1, None
         for result in results:  # Assuming 'results' is a list
             for prediction in result.predictions:
                 print(prediction)
