@@ -61,37 +61,21 @@ class BluetoothServer:
         print("All done")
 
 if __name__ == "__main__":
-    #print("['']")
     bt_server = BluetoothServer()
-    first_time = True
-
+    print("start up")
+    count = 0
+    data = None
     try:
-        data = bt_server.receive_data()
-        # print(f"data = {data}")
+        while True:
+            if count > 5:
+                break
+            data = bt_server.receive_data()
+            if data:
+                print(f"data = {data}")
+                count += 1
+            
 
-        # while True:
-        #     if first_time:
-        #         robot_messages = [
-        #             "ROBOT/1/2/N",
-        #             "ROBOT/10/3/N",
-        #             "ROBOT/5/4//E"  # Assuming you want to include a sleep after this message as well
-        #         ]
-
-        #         for message in robot_messages:
-        #             bt_server.send_data(message)
-        #             time.sleep(1)  # Sleep for 1 second after each message
-
-        #         count = 1
-        #         for i in range(11, 13):  # Note that the end value in range is exclusive, so use 41 to include 40
-        #             message = f"TARGET/{count}/{i}"
-        #             bt_server.send_data(message)
-        #             count += 1
-        #             time.sleep(1)
-                
-        #         first_time = False
-
-        time.sleep(30)
-        msg_to_android = f"END/EXPLORE"
+        msg_to_android = f"FINISH/PATH"
         bt_server.send_data(msg_to_android)
 
     except KeyboardInterrupt:

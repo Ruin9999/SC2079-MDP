@@ -233,7 +233,8 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
                 
                 predict_id = None
                 startTime = datetime.now()
-                response = client.send_file(file_path, direction)
+                task_type = "TASK_1"
+                response = client.send_file(file_path, direction, task_type)
                 endTime = datetime.now()
                 totalTime = (endTime - startTime).total_seconds()
                 print(f"Time taken for Receiving Image = {totalTime} s")

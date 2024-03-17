@@ -14,10 +14,10 @@ class ImageRecognitionClient:
             print(f"Error checking status: {response.status_code}")
             return None
 
-    def send_file(self, file_path, direction):
+    def send_file(self, file_path, direction, task_type):
         with open(file_path, 'rb') as f:
             files = {'file': f}
-            data = {'direction': direction}
+            data = {'direction': direction, 'task_type': task_type}
             response = requests.post(f"{self.server_url}/upload", files=files, data=data)
             if response.status_code == 200:
                 print("File sent to the server successfully.")

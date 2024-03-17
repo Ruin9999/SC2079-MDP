@@ -21,7 +21,7 @@ class Predictor:
         # Load a pre-trained yolov8n model
         self.model = get_roboflow_model(model_id="2024-grp-16-image-rec/8", api_key=self.api_key)
 
-    def predict_id(self, image_file_path):
+    def predict_id(self, image_file_path, task_type):
         # Load the image
         image = cv2.imread(image_file_path)
 
@@ -36,12 +36,22 @@ class Predictor:
         # Extract class name
         class_name, largest_size, detection_id = None, -1, None
         for result in results:  # Assuming 'results' is a list
-            for prediction in result.predictions:
-                print(prediction)
-                if largest_size == -1 or max(prediction.width, prediction.height) > largest_size:
-                    largest_size = max(prediction.width, prediction.height)
+            print(f"task_type is {task_type}")
+            
+            if task_type == "TASK_2":
+                for prediction in result.predictions:
+                    print(prediction)                    
                     class_name = prediction.class_name
                     detection_id = prediction.detection_id
+                    if class_name != "Bulls Eye":
+                        break
+            else:
+                for prediction in result.predictions:
+                    print(prediction)
+                    if largest_size == -1 or max(prediction.width, prediction.height) > largest_size:
+                        largest_size = max(prediction.width, prediction.height)
+                        class_name = prediction.class_name
+                        detection_id = prediction.detection_id
 
         if class_name:
             print("class_name = " + class_name)
@@ -73,4 +83,4 @@ if __name__ == "__main__":
     # Specify the path to your image
     image_file_path = PC_CONFIG.FILE_DIRECTORY + "image-rec\\sample_images\\image_2024-02-29_18-27-32.jpg"
     # Predict and display the class name
-    predictor.predict_id(image_file_path)
+    predictor.predict_id(image_file_path, "TASK_1")

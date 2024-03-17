@@ -20,13 +20,14 @@ PORT = PC_CONFIG.IMAGE_REC_PORT
 UPLOAD_FOLDER =  PC_CONFIG.FILE_DIRECTORY + "image-rec\\images\\"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def process_file(file_path, direction, show_annotation_queue):
+def process_file(file_path, direction, task_type, show_annotation_queue):
     predictor = Predictor()
     print("File received and saved successfully.")
     print(f"Direction received: {direction}")
+    print(f"Task type received: {task_type}")
 
     startTime = datetime.now()
-    class_name, results, detection_id = predictor.predict_id(file_path)  # Perform prediction
+    class_name, results, detection_id = predictor.predict_id(file_path, task_type)  # Perform prediction
     show_annotation_queue.put((file_path, results, detection_id))
     class_id = str(mapping.get(class_name, -1))
     endTime = datetime.now()
@@ -45,6 +46,7 @@ def upload_file():
         return jsonify({'error': 'No file part'}), 400
     file = request.files['file']
     direction = request.form['direction']
+    task_type = request.form['task_type']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     if file:
@@ -53,7 +55,7 @@ def upload_file():
         file.save(file_path)
         
         # Process the file and predict
-        class_id = process_file(file_path, direction, show_annotation_queue)
+        class_id = process_file(file_path, direction, task_type, show_annotation_queue)
         return jsonify({'message': 'File successfully uploaded', 'predicted_id': class_id}), 200
 
 @app.route('/display_stitched', methods=['POST'])
