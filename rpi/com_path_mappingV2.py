@@ -1,44 +1,40 @@
 def map_commands_to_paths(data):
-    commands = data["commands"]
+    transformed_commands = data["commands"]
     paths = data["path"]
     mapped_commands = []
 
-    # Initialize variables to keep track of the paths associated with each command
-    current_paths = []
-    # Track the current path index for assigning to commands
-    non_snap_path_index = 0
+    # Initialize variables
+    non_snap_path_index = 0  # Tracks which path we're on
 
-    # Iterate over commands
-    for command in commands:
-        # Handle SNAP, FIN, or commands to be skipped by not appending new paths but processing their logic
-        if command in ["FIN", "FW002", "FW003", "BW002"]:
-            # Append the command with its accumulated paths (if any) and reset current_paths
-            mapped_commands.append((command, current_paths if current_paths else None))
-            current_paths = []  # Reset for the next command
-        elif command.startswith("SNAP"):
-            # For SNAP commands, do not reset current_paths to allow accumulation
+    segment_start = True  # Flag to indicate if we are at the start of a new segment
+
+    for command in transformed_commands:
+        if command in ["FW003", "FW002", "BW002"]:
+            # At the start of a segment that requires a path
+            if segment_start and non_snap_path_index < len(paths):
+                mapped_commands.append((command, [paths[non_snap_path_index]]))
+                non_snap_path_index += 1
+            else:
+                mapped_commands.append((command, None))
+            segment_start = False  # Not at the start anymore
+        elif command in ["FL090", "FR090", "BL090", "BR090"]:
+            # These commands are continuation of a segment, no path assigned
             mapped_commands.append((command, None))
+            segment_start = False  # Still not the start of a new segment
+        elif command.startswith("SNAP") or command == "FIN":
+            # SNAP and FIN are treated as their own segments but don't have paths
+            mapped_commands.append((command, None))
+            segment_start = True  # Next command could be the start of a new segment
         else:
-            # For other commands, accumulate paths and then append to the command
+            # For any command not explicitly handled above, assign the next path if available
             if non_snap_path_index < len(paths):
-                current_paths.append(paths[non_snap_path_index])
-                non_snap_path_index += 1  # Move to the next path for the next valid command
-
-            # Once paths are accumulated for this command, append it to mapped_commands
-            mapped_commands.append((command, current_paths))
-            current_paths = []  # Reset for the next command
-
-    # Handle the case where the last command(s) are "SNAP" or skipped ones without direct path assignments
-    if current_paths:
-        # If there are accumulated paths not yet appended because the last commands were skipped or "SNAP",
-        # append these paths to the last valid command that was added to mapped_commands.
-        for i in range(len(mapped_commands) - 1, -1, -1):
-            if mapped_commands[i][1] is not None:
-                mapped_commands[i][1].extend(current_paths)
-                break
+                mapped_commands.append((command, [paths[non_snap_path_index]]))
+                non_snap_path_index += 1
+            else:
+                mapped_commands.append((command, []))
+            segment_start = True  # Next command could be the start of a new segment
 
     return mapped_commands
-
 
 if __name__ == "__main__":
     # Provided input data
