@@ -14,7 +14,8 @@ from config import PC_CONFIG
 
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
-def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event):
+def startBTServer(bt_queue, algo_queue, ir_queue, stm32_send_queue, stm32_recv_queue,
+                  bt_start_event, algo_start_event, ir_start_event, stm_start_event):
     print("Connecting to Android Bluetooth...")
     bt_server = BluetoothServer()
     receive_data = None
@@ -48,7 +49,7 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
         algo_queue.put_nowait(receive_data)
         algo_start_event.set()
 
-        while running_flag[0]:
+        while True:
             if not bt_queue.empty():
                 # bt_start_event.wait()
 
@@ -111,17 +112,25 @@ def startBTServer(bt_queue, algo_queue, running_flag, bt_start_event, algo_start
                 if command != "IR_CAPTURING" and command != "STM32":
                     algo_start_event.set()
 
+        # wait for android to stop timer before gracefully closing other processes
         # delay the disconnection
         time.sleep(10)
-        running_flag[0] = False
+        msg = "FIN"
+        ir_queue.put((msg,))
+        stm32_send_queue.put((msg,))
 
+        algo_queue.put_nowait((msg,))
+        ir_start_event.set()
+        stm_start_event.set()
+        stm32_recv_queue.put((msg,))
     finally:
         print("Disconnecting from Android Bluetooth")
         bt_server.close_connection()
 
 
 
-def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event):
+def startAlgoClient(algo_queue, ir_queue,
+                    algo_start_event, bt_start_event, ir_start_event, stm_start_event):
 
     HOST = PC_CONFIG.HOST
     PORT = PC_CONFIG.ALGO_PORT
@@ -136,18 +145,21 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
         print("[CONNECTED] to Algo Server\n")
         # Test - assume that msg received from android and is put into queue
         # algo_queue.put(1)
-        while running_flag[0]:
+        while True:
             if not algo_queue.empty():
-                env = algo_queue.get_nowait()
+                msg = algo_queue.get_nowait()
+                
+                if isinstance(msg, (tuple)) and msg[0] == "FIN":
+                    break
 
                 # Example navigation data to send
-                # env = {"type":"START\/EXPLORE","size_x":20,"size_y":20,"robot_x":1,"robot_y":1,"robot_direction":0,"obstacles":[{"x":5,"y":6,"id":1,"d":4},{"x":8,"y":1,"id":2,"d":0},{"x":11,"y":10,"id":3,"d":2}]}
+                # msg = {"type":"START\/EXPLORE","size_x":20,"size_y":20,"robot_x":1,"robot_y":1,"robot_direction":0,"obstacles":[{"x":5,"y":6,"id":1,"d":4},{"x":8,"y":1,"id":2,"d":0},{"x":11,"y":10,"id":3,"d":2}]}
 
                 response_received = None
                 try_count = 1
 
                 while not response_received and try_count <= 3:
-                    response_received = client.navigate(env)  # Updated to use the navigate method
+                    response_received = client.navigate(msg)  # Updated to use the navigate method
                     try_count += 1
 
                 if response_received:
@@ -191,14 +203,13 @@ def startAlgoClient(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt
 
                                 elif command == "FIN":
                                     bt_queue.put((command,))
-                                    ir_queue.put((command,))
-                                    ir_start_event.set()
                                     # bt_start_event.set()
+
     else:
         print("Failed to connect to the Algo server or Algo server returned an unexpected status.")
 
 
-def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_event, algo_start_event):
+def startIRClient(ir_queue, bt_queue, ir_start_event, bt_start_event):
     HOST = PC_CONFIG.HOST 
     PORT = PC_CONFIG.IMAGE_REC_PORT
     client = ImageRecognitionClient(HOST,PORT)  # Optionally pass host and port
@@ -209,15 +220,15 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
     if status_response and status_response.get('status') == 'OK':
         print("[CONNECTED] to IR Server\n")
 
-        while running_flag[0]:
+        while True:
             if not ir_queue.empty():
                 ir_start_event.wait()
-                command = ir_queue.get()
+                msg = ir_queue.get()
 
-                if command[0] == "FIN":
+                if msg[0] == "FIN":
                     break
 
-                (substring, number_part, direction) = command
+                (substring, number_part, direction) = msg
                 print(f"substring is {substring}")
                 print(f"Taking a photo for obstacle no {number_part}")
                 print(f"Direction is {direction}")
@@ -246,28 +257,36 @@ def startIRClient(ir_queue, bt_queue, running_flag, ir_start_event, bt_start_eve
     else:
         print("Failed to connect to the IR server or IR server returned an unexpected status.")
 
-def stmSendThread(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_start_event):
+def stmSendProcess(STM, stm32_send_queue, stm32_recv_queue, stm_start_event):
 
-    while running_flag[0]:
+    while True:
         if not stm32_send_queue.empty():
             stm_start_event.wait()
+            msg =  stm32_send_queue.get()
 
-            msg, associated_path = stm32_send_queue.get()
-            print(f"stm32 queue msg = {msg}")
-            STM.send(msg)
-            stm32_recv_queue.put((msg, associated_path))
+            if msg[0] == "FIN":
+                break
+
+            (command, associated_path) = msg
+            print(f"stm32 queue msg = {command}")
+            STM.send(command)
+            stm32_recv_queue.put((command, associated_path))
             stm_start_event.clear()
             time.sleep(0.1)
 
 
-def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event):
-    while running_flag[0]:
+def stmRecvProcess(STM, stm32_recv_queue, bt_queue, bt_start_event, algo_start_event):
+    while True:
         if not stm32_recv_queue.empty():
-            msg, associated_path = stm32_recv_queue.get(timeout=3)
+            msg = stm32_recv_queue.get(timeout=3)
+
+            if msg[0] == "FIN":
+                break
+
+            (command , associated_path) = msg
             start_time = time.time()
             timeout = 3   
             received_msg = None
-
             while(True):
                 received_msg = STM.recv()
                 # print(f"Received from stm: {received_msg}")
@@ -285,7 +304,7 @@ def stmRecvThread(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event,
 
 
 if __name__ == "__main__":
-    # Queues for communication between threads
+    # Queues for communication between processes
     bt_queue = Queue()
     algo_queue = Queue()
     ir_queue = Queue()
@@ -298,30 +317,38 @@ if __name__ == "__main__":
     ir_start_event = Event() 
     stm_start_event = Event() 
 
-    # Flag to control the execution of threads
-    running_flag = [True]
-
     # init STM32 Server
     print("Connecting to STM...")
     STM = STM32Server()
     STM.connect()
 
-    # Creating threads for each task
-    threads = [
-        Process(target=startBTServer, args=(bt_queue, algo_queue, running_flag, bt_start_event, algo_start_event)),
-        Process(target=startAlgoClient, args=(algo_queue, ir_queue, stm32_send_queue, algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
-        Process(target=startIRClient, args=(ir_queue, bt_queue, running_flag,  ir_start_event, bt_start_event, algo_start_event)),
-        Process(target=stmSendThread, args=(STM, stm32_send_queue, stm32_recv_queue, running_flag, stm_start_event)),
-        Process(target=stmRecvThread, args=(STM, stm32_recv_queue, bt_queue, running_flag, bt_start_event, algo_start_event))
+    # Creating processes for each task
+    processes = [
+        Process(target=startBTServer, args=(bt_queue, algo_queue, ir_queue, stm32_send_queue, stm32_recv_queue,
+                                             bt_start_event, algo_start_event, ir_start_event, stm_start_event)),
+
+        Process(target=startAlgoClient, args=(algo_queue, ir_queue,
+                                               algo_start_event, bt_start_event, ir_start_event, stm_start_event)),
+
+        Process(target=startIRClient, args=(ir_queue, bt_queue,
+                                             ir_start_event, bt_start_event)),
+
+        Process(target=stmSendProcess, args=(STM, 
+                                             stm32_send_queue, stm32_recv_queue, 
+                                             stm_start_event)),
+
+        Process(target=stmRecvProcess, args=(STM, 
+                                             stm32_recv_queue, bt_queue, 
+                                             bt_start_event, algo_start_event))
     ]
 
-    # Starting threads
-    for thread in threads:
-        thread.start()
+    # Starting processes
+    for process in processes:
+        process.start()
 
-    # Waiting for all threads to complete before exiting the main thread
-    for thread in threads:
-        thread.join()
+    # Waiting for all processes to complete before exiting the main thread
+    for process in processes:
+        process.join()
 
     print("Disconnecting from STM")
     STM.disconnect()
