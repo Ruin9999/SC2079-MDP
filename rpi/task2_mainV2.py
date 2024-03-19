@@ -77,7 +77,7 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
         while True:
             if not cmd_queue.empty():
                 msg = cmd_queue.get_nowait()
-                command = "US050"
+                command = "US040"
                 stm32_send_queue.put(command)
                 stm_start_event.set()
                 break
@@ -97,9 +97,11 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
         if predict_id == "-1":
             print("Failed to identify left or right for Obstacle 1, going left by default.")    
         # Default left commands
-        commands = ["FL060", "FR060", "FW035", "FR060", "FL060", "US030"]
+        # commands = ["FL060", "FR060", "FW035", "FR060", "FL060", "US030"]
+        commands = [ 'FL045','FW020','FR045','FW011','FR060','FL060','US125']
         if direction == "R":
-            commands = ["FR060", "FL060", "FW035", "FL060", "FR060","US030"]
+            # commands = ["FR060", "FL060", "FW035", "FL060", "FR060","US030"]
+            commands =   ['FR045','FW020','FL045','FW011','FL060','FR060','US125']
         # Send commands to STM to navigate pass obstacle 1
         cmd_start_event.set()
         for command in commands:
@@ -120,6 +122,8 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
         direction = "L"
         predict_id = -1
         predict_id = cmd_queue.get()
+        print(f"Predicted ID from CMD queue: {predict_id}")
+        print(f"Direction obtained: {direction}")
         if predict_id == "38":
             direction = "R"
         if predict_id == "-1":
@@ -132,32 +136,28 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
             # IR until opposite edge of obstacle 2
             # turn corner to go back to front of obstacle 2 again 
         # Default left commands
-        commands = ["FL090", "FW015",                   
-                    "FR090", "FW003", "FR090",                 
-                    "FW070",                    
-                    "FR090", "FW003"] 
+        # commands = ["FL090", "FW015",                   
+        #             "FR090", "FW003", "FR090",                 
+        #             "FW070",                    
+        #             "FR090", "FW003"] 
+        commands = ['FL090','FW025',
+                        'FR090','FW010','FR090','FW095','FR090',
+                        'RT040','FW000','FR090','FW020','FL090','US015']
         if direction == "R":
-            commands = ["FR090", "FW015",                       
-                        "FL090", "FW003", "FL090",
-                        "FW070",                    
-                        "FL090","FW003"] 
-             
-        # Send commands to STM to navigate around obstacle 2
+            # commands = ["FR090", "FW015",                      
+            #             "FL090", "FW003", "FL090",
+            #             "FW070",                    
+            #             "FL090","FW003"] 
+             commands = ['FR090','FW018',
+                         'FL090','FW010','FL090','FW090','FL090',
+                        'RT040', 'FW000', 'FL090','FW020','FR090','US015']
+        # Send commands to STM to navigate around obstacle 2 and # Go back to the carpark
         cmd_start_event.set()
         for command in commands:
             cmd_start_event.wait()
             stm32_send_queue.put(command)
             stm_start_event.set()
             cmd_start_event.clear()
-
-        #STAGE 3
-        # Go back to the carpark
-            
-        # Maybe can use move until IR sensor detect object on the side (obstacle 1)
-            # then perform hardcoded code to be in front of obstacle 1 again
-            # IR detect object on right (if facing carpark from left side)
-            # IR detect object on left (if facing carpark from right side)
-        # then send US20 go inside carpark?
 
         bt_queue.put("FIN")
         # wait for bt to send "FINISH/PATH" and set cmd_start_event
@@ -238,7 +238,7 @@ def stmRecvProcess(STM, stm32_recv_queue, cmd_start_event):
                     print("Timeout waiting for R receive message")
                     break
                 else:
-                    time.sleep(0.07)
+                    time.sleep(0.1)
     
             cmd_start_event.set()
 
