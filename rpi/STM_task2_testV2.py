@@ -26,29 +26,41 @@ if __name__ == "__main__":
     second_direction = command[1]  # Second character of the command
 
     # Default left commands for first part
-    first_part_commands = ['US040',
-                           'FL045','FW020','FR045','FW011',
+    first_part_commands = ['US040','US040',
+                           'FL050','FW020','FR050','FW011',
                            'FR060','FL060','US125']
     
     # Right commands for first part
     if first_direction == "R":
-        first_part_commands = ['US040',
-                               'FR045','FW020','FL045','FW010',
+        first_part_commands = ['US040','US040',
+                               'FR050','FW020','FL050','FW010',
                                'FL060','FW011','FR060','US125']
+        # first_part_commands = ['US040','US040',
+        #                        'FR050','FW020','FL050','FW010',
+        #                        'FL060','FR060','US125']
     elif first_direction == "0":
         first_part_commands = []
 
 
-    # Default left commands for second part
-    second_part_commands = ['FL090','FW018',
-                            'FR090','FW010','FR090','FW087','FR090',
-                            'RT040','FW000','FR090','FW023','FL090','US015']
+    # Default left commands for second part 
+    # second_part_commands = ['FL090','IR030',
+    #                         'FR090','FW010','FR090','IR130','FR090',
+    #                         'RT040','FW000','FR090','RT000','FL090','US020']
+    
+    second_part_commands = ['FL090','IR130', 'FW007',
+                            'FR090','FW010','FR090','IR030','FW003','FR090',
+                            'RT040','FW000','FR090','RT100', "FL090", "US015", "US015"]
 
     # Right commands for second part
     if second_direction == "R":
-        second_part_commands = ['FR090','FW018',
-                                'FL090','FW010','FL090','FW087','FL090',
-                                'RT040', 'FW000', 'FL090','FW026','FR090','US015']
+        # second_part_commands = ['FR090','IR030',
+        #                         'FL090','FW010','FL090','IR130','FL090',
+        #                         'RT040', 'FW000', 'FL090','RT000','FR090','US020']
+        
+        second_part_commands = ['FR090','IR130', 'FW007',
+                                'FL090','FW010','FL090','IR030','FW003','FL090',
+                                'RT040', 'FW000', 'FL090','RT100', "FR090", "US015", "US015"]
+
     elif second_direction == "0":
         second_part_commands = []
 
