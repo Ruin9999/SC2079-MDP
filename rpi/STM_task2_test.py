@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if second_direction == "R":
         second_part_commands = ['FR090','FW018',
                                 'FL090','FW010','FL090','FW087','FL090',
-                                'RT040', 'FW000', 'FL090','FW024','FR090','US020']
+                                'RT040', 'FW000', 'FL090','FW026','FR090','US020']
     elif second_direction == "0":
         second_part_commands = []
 

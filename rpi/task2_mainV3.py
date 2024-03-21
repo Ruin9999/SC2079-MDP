@@ -101,9 +101,11 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
                     print("Failed to identify left or right for Obstacle 1, going left by default.")
                 break   
         # Default left commands
-        commands = [ 'FL045','FW020','FR045','FW011','FR060','FL060','US125']
+        commands = ['FL045','FW020','FR045','FW011',
+                    'FR060','FL060','US125']
         if direction == "R":
-            commands =   ['FR045','FW020','FL045','FW011','FL060','FR060','US125']
+            commands =   ['FR045','FW020','FL045','FW007',
+                          'FL060','FW011','FR060','US125']
         # Send commands to STM to navigate pass obstacle 1
         cmd_start_event.set()
         for command in commands:
@@ -145,12 +147,12 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
             # turn into carpark based on whichever side the robot is on (left or right side)
         # Default left commands
         commands = ['FL090','FW018',
-                        'FR090','FW010','FR090','FW090','FR090',
-                        'RT040','FW000','FR090','FW020','FL090','US015']
+                    'FR090','FW010','FR090','FW087','FR090',
+                    'RT040','FW000','FR090','FW023','FL090','US020']
         if direction == "R":
              commands = ['FR090','FW018',
-                         'FL090','FW010','FL090','FW090','FL090',
-                        'RT040', 'FW000', 'FL090','FW020','FR090','US015']
+                         'FL090','FW010','FL090','FW087','FL090',
+                         'RT040', 'FW000', 'FL090','FW026','FR090','US020']
         # Send commands to STM to navigate around obstacle 2 and Go back to the carpark
         cmd_start_event.set()
         for command in commands:

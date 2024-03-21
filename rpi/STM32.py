@@ -1,5 +1,6 @@
 import time
 import serial
+import re  # Import the regex module
 
 class STM32Server:
     def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=115200):
@@ -51,6 +52,7 @@ class STM32Server:
             print(f"Sent to STM: {command}")
             start_time = time.time()
             timeout = 3
+            pattern = r"^(RT)\d{3}$"
             while True:
                 received_msg = self.recv()
                 if received_msg == "R":
@@ -59,6 +61,8 @@ class STM32Server:
                 elif (time.time()-start_time>timeout):
                     print("Timeout waiting for R receive message")
                     break
+            if re.match(pattern, command):
+                time.sleep(0.1)
 
 
 if __name__ == "__main__":
