@@ -91,6 +91,7 @@ def startBTServer(bt_queue, algo_queue, ir_queue, stm32_send_queue, stm32_recv_q
                         msg_to_android = f"TARGET/{number_part}/{predict_id}"
                         print(f"sending target to android: {msg_to_android}")
                         bt_server.send_data(msg_to_android)
+                        time.sleep(0.05)
 
 
                 elif command == "FIN":

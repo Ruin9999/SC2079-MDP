@@ -52,7 +52,7 @@ class STM32Server:
             print(f"Sent to STM: {command}")
             start_time = time.time()
             timeout = 3
-            pattern = r"^(RT)\d{3}$"
+            pattern = r"^(RT)\d{5}$"
             while True:
                 received_msg = self.recv()
                 if received_msg == "R":

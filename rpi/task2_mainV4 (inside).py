@@ -105,7 +105,7 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
         #             'FR060','FL060','US125']
         commands = ['US040','US040',
                            'FL050','FW020','FR050','FW011',
-                           'FR060', "FW011",'FL060','US125']
+                           'FR060',"FW011",'FL060','US125']
         if direction == "R":
             commands = ['US040','US040',
                         'FR050','FW020','FL050','FW010',
@@ -153,15 +153,15 @@ def cmdGeneratorTemp(bt_queue, cmd_queue, ir_queue, stm32_send_queue,
             # turn into carpark based on whichever side the robot is on (left or right side)
         # Default left commands
         commands = ['FL090','IR130', 'FW007',
-                    'FR090','FW010','FR090','IR030','FW003','FR090',
-                    'RT040','FW000','FR090','FW000','RT110', "FL090", "US012", "US012"]
+                            'FR090','FW010','FR090','IR030','FW002','FR090',
+                            'RT040','FW000','FR090','RT110', "FL090", "US015", "US015"]
         # commands = ['FL090','FW018',
         #             'FR090','FW010','FR090','FW087','FR090',
         #             'RT040','FW000','FR090','FW023','FL090','US015']
         if direction == "R":
-            commands = ['FR090','IR130', 'FW007',
-                                'FL090','FW010','FL090','IR030','FW003','FL090',
-                                'RT040', 'FW000', 'FL090','FW000','RT110', "FR090", "US012", "US012"]
+            commands = ['FR090','IR130', 'FW005',
+                                'FL090','FW010','FL090','IR030','FW002','FL090',
+                                'RT040', 'FW000', 'FL090','RT107', "FR090", "US015", "US015"]
             # commands = ['FR090','FW018',
             #              'FL090','FW010','FL090','FW087','FL090',
             #              'RT040', 'FW000', 'FL090','FW026','FR090','US015']
